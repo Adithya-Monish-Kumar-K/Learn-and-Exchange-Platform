@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+*{
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(0, 0, 0, 0.87);
+  background-color: #e2e2e2;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+}
+
+.recipe-container {
+  padding: 1.5rem;
+  background: #fff8f0;
+  border-radius: 12px;
+  margin: 0 auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", sans-serif;
+  color: #333;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+  .recipe-container {
+    margin-left: 50px;
+  }
+}
+
+.recipe-container::-webkit-scrollbar {
+  display: none;
+}
+
+.recipe-container h1 {
+  font-size: 2rem;
+  color: #cc3300;
+  margin-bottom: 0.75rem;
+}
+
+.recipe-container h2 {
+  font-size: 1.4rem;
+  margin-top: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #222;
+}
+
+.recipe-container ul,
+.recipe-container ol {
+  padding-left: 2rem;
+  margin-bottom: 1.2rem;
+}
+
+.recipe-container ul {
+  list-style-type: disc;
+}
+
+.recipe-container ol {
+  list-style-type: decimal;
+}
+
+.recipe-container ul li,
+.recipe-container ol li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+  font-size: 1.05rem;
+  background: #fff3e0;
+  border-radius: 6px;
+  padding: 0.3em 0.8em;
+  margin-left: 0;
+}
+
+.recipe-container ul li {
+  /* For ingredients: subtle highlight */
+  background: #fff6ea;
+  font-weight: 500;
+}
+
+.recipe-container ol li {
+  /* For directions: slightly different highlight */
+  background: #f9e7d2;
+  font-weight: 400;
+}
