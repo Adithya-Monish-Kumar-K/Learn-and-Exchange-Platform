@@ -13,7 +13,6 @@ export interface IUser {
   certifications?: (string | Types.ObjectId)[];
   links?: string[];
   recommendations?: { fromUser: (string | Types.ObjectId); message: string; date: Date }[];
-  reviews?: { fromUser: (string | Types.ObjectId); rating: number; comment?: string; date: Date }[];
   tasksPosted?: (string | Types.ObjectId)[];
   tasksCompleted?: (string | Types.ObjectId)[];
   resume?: (string | Types.ObjectId);

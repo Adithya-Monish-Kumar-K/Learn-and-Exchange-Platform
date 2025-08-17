@@ -73,14 +73,6 @@ const UserSchema: Schema<IUserDocument> = new Schema(
         date: { type: Date, default: Date.now },
       },
     ],
-    reviews: [
-      {
-        fromUser: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        rating: { type: Number, required: true, min: 1, max: 5 },
-        comment: { type: String },
-        date: { type: Date, default: Date.now },
-      },
-    ],
     tasksPosted: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
     tasksCompleted: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
     resume: { type: Schema.Types.ObjectId, ref: 'Asset' },
