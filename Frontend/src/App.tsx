@@ -1,9 +1,13 @@
+import UserProfileForm from './components/forms/UserProfileForm';
+
 function App() {
   return (
-    <>
-      <h1 className="text-center font-bold text-5xl">Learn and Exchange</h1>
-    </>
-  )
+    <div style={{ padding: 16, maxWidth: 1200, margin: '0 auto' }}>
+      <h1 className="text-center font-bold text-5xl" style={{ marginBottom: 16 }}>Learn and Exchange</h1>
+
+  <UserProfileForm onSubmit={(d) => console.log('profile submit', d)} onDeactivate={() => console.log('deactivate clicked')} />
+    </div>
+  );
 }
 
-export default App
+export default App;
