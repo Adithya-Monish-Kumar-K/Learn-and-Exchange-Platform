@@ -1,0 +1,131 @@
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { updateTask } from '../services/taskService';
+
+interface TaskEditFormProps {
+  task: any;
+  onTaskUpdated: () => void;
+  onCancel: () => void;
+}
+
+const schema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  deadline: z.string().optional(),
+  status: z.enum(['open', 'in_progress', 'completed', 'cancelled']),
+});
+
+type FormData = z.infer<typeof schema>;
+
+const TaskEditForm: React.FC<TaskEditFormProps> = ({
+  task,
+  onTaskUpdated,
+  onCancel,
+}) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      title: task.title,
+      description: task.description,
+      deadline: task.deadline ? task.deadline.split('T')[0] : '',
+      status: (task.status as FormData['status']) || 'open',
+    },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    console.log('TaskEditForm submit:', data);
+    await updateTask(task._id, data);
+    console.log('Task updated for id:', task._id);
+    onTaskUpdated();
+    onCancel();
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="bg-white p-6 rounded-lg shadow-sm"
+    >
+      <h3 className="text-lg font-semibold mb-4 text-gray-800">Edit Task</h3>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Title
+        </label>
+        <input
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
+          {...register('title')}
+        />
+        {errors.title?.message && (
+          <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
+        <textarea
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
+          {...register('description')}
+        />
+        {errors.description?.message && (
+          <p className="text-sm text-red-500 mt-1">
+            {errors.description.message}
+          </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Deadline
+          </label>
+          <input
+            type="date"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
+            {...register('deadline')}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Status
+          </label>
+          <select
+            className="w-full px-3 py-2 border rounded-md"
+            {...register('status')}
+          >
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3">
+        <button
+          type="submit"
+          className="px-4 py-2 bg-sky-600 text-white rounded-md"
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 border rounded-md"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+};
+
+export default TaskEditForm;

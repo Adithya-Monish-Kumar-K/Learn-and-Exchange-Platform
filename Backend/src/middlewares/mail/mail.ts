@@ -7,7 +7,6 @@ import {
 } from './template';
 import { registermailtoken, forgotmailtoken } from '../auth/tokenCreation';
 
-// Nodemailer transporter setup using environment variables
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),

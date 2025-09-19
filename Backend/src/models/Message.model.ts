@@ -3,45 +3,45 @@ import { Schema, model, Types, Document } from 'mongoose';
 export interface IMessage {
   senderId: Types.ObjectId;
   text: string;
-  timestamp: Date;
+  type: string;
+  readBy: Types.ObjectId[];
+  isEdited: boolean;
+  media: Types.ObjectId[];
 }
 
 export interface IChat extends Document {
+  type: string;
   participants: Types.ObjectId[];
-  listingId: Types.ObjectId;
-  offerId: Types.ObjectId;
+  taskId?: Types.ObjectId;
+  offerId?: Types.ObjectId;
   messages: IMessage[];
-  lastUpdated: Date;
 }
 
 const messageSchema = new Schema<IMessage>(
   {
     senderId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    text: { type: String, required: true },
-    timestamp: { type: Date, default: () => new Date() }
+    text: { type: String, required: false },
+    type: { type: String, enum: ['text', 'image', 'file'], default: 'text' },
+    readBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    isEdited: { type: Boolean, default: false },
+    media: [{ type: Schema.Types.ObjectId, ref: 'Asset' }],
   },
-  { _id: false }
+  { _id: false, timestamps: true }
 );
 
 const chatSchema = new Schema<IChat>(
   {
+    type: { type: String, enum: ['group', 'private'], default: 'private' },
     participants: [
-      { type: Schema.Types.ObjectId, ref: 'User', required: true }
+      { type: Schema.Types.ObjectId, ref: 'User', required: true },
     ],
-    listingId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Listing',
-      required: true
-    },
-    offerId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Offer',
-      required: true
-    },
+    taskId: { type: Schema.Types.ObjectId, ref: 'Task' },
+    offerId: { type: Schema.Types.ObjectId, ref: 'Offer' },
     messages: [messageSchema],
-    lastUpdated: { type: Date, default: () => new Date() }
   },
   { timestamps: true }
 );
 
-export default model<IChat>('Chat', chatSchema);
+const Message = model<IChat>('Chat', chatSchema);
+
+export default Message;

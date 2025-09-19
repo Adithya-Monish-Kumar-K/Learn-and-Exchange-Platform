@@ -1,41 +1,23 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
-import { IAsset } from "../types/Asset";
+import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
-export interface IAssetDocument extends IAsset, Document {}
-export interface IAssetModel extends Model<IAssetDocument> {}
+export interface IAsset extends Document {
+  url: string;
+  publicId?: string;
+  resourceType?: string;
+  uploadedBy?: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-const AssetSchema: Schema<IAssetDocument> = new Schema(
+const assetSchema = new Schema<IAsset>(
   {
-    owner: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    url: {
-      type: String,
-      required: true,
-    },
-    fileName: {
-      type: String,
-      required: true,
-    },
-    fileSize: {
-      type: Number,
-    },
-    mimeType: {
-      type: String,
-    },
-    description: {
-      type: String,
-      maxlength: 300,
-    },
+    url: { type: String, required: true },
+    publicId: { type: String },
+    resourceType: { type: String },
+    uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }
 );
 
-const Asset: IAssetModel = mongoose.model<IAssetDocument, IAssetModel>(
-  "Asset",
-  AssetSchema
-);
-
+const Asset = mongoose.model<IAsset>('Asset', assetSchema);
 export default Asset;
