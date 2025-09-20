@@ -1,9 +1,7 @@
 import { Types } from "mongoose";
 
 export interface IUser {
-  // Primary field; available as alias 'name' on the schema
   username: string;
-  // Consumers may still access 'name' via alias; declare optional to satisfy TS
   name?: string;
 
   email: string;

@@ -5,7 +5,6 @@ import { IUser } from '../types/User';
 export interface IUserDocument extends IUser, Document {}
 export interface IUserModel extends Model<IUserDocument> {}
 
-// Redesign aligned with DB schema. "username" is primary, with alias "name" for backward compatibility
 const UserSchema: Schema<IUserDocument> = new Schema(
   {
     username: {
@@ -44,13 +43,10 @@ const UserSchema: Schema<IUserDocument> = new Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
-  // Optional profile fields per schema
     bio: { type: String, maxlength: 500 },
     skills: [{ type: String, trim: true }],
   links: [{ type: String, trim: true }],
-  // Experience stored as string entries (e.g., "Company - Role - Years")
   experience: [{ type: String, trim: true }],
-  // Certifications simply reference Asset IDs
   certifications: [{ type: Schema.Types.ObjectId, ref: 'Asset' }],
     credit: { type: Number, default: 0, min: 0 },
     tasksPosted: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
@@ -75,7 +71,6 @@ const UserSchema: Schema<IUserDocument> = new Schema(
   }
 );
 
-// Helpful indexes for frequent lookups
 UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ phone: 1 }, { unique: true });
 UserSchema.index({ username: 1 }, { unique: true });
