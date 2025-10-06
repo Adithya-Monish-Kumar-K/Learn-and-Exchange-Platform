@@ -1,16 +1,51 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import SkillExchange from './pages/LandingPage';
-import Chat from './pages/Chat';
-import TaskList from "./components/TaskList";
+import LandingPage from './pages/LandingPage';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import Dashboard from './pages/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <Router>
       <>
         <Routes>
-          <Route path="/" element={<SkillExchange />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/resetpassword/:token" element={<ResetPassword />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          {/* Placeholder chat route */}
+          <Route
+            path="/user/chat"
+            element={
+              <ProtectedRoute>
+                <div className="min-h-screen bg-gray-50">
+                  <Navbar isAuthenticated />
+                  <div className="max-w-4xl mx-auto px-6 py-12">
+                    <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+                      Chat (Coming Soon)
+                    </h1>
+                    <p className="text-gray-600 text-sm">
+                      Realtime messaging module under construction.
+                    </p>
+                  </div>
+                </div>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </>
     </Router>
