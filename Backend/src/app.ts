@@ -4,12 +4,12 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { connectToDb, getDb } from "./config/db";
 import authRoutes from "./routes/auth.routes";
+import chatRoutes from "./routes/chat.routes";
+import { app, server } from "./config/socket";
 
 dotenv.config();
 
 const port = process.env.PORT || 3002;
-
-const app = express();
 
 app.use(cors({
     origin: true,
@@ -20,6 +20,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/', (req, res) => {
     const db = getDb();
@@ -31,10 +32,13 @@ app.get('/', (req, res) => {
     }
 });
 
-connectToDb().then(() => {
-    app.listen(port, () => {
-        console.log(`Server is running on http://localhost:${port}`);
+server.listen(port, () => {
+    connectToDb().then(() => {
+        app.listen(port, () => {
+            console.log(`Server is running on http://localhost:${port}`);
+        });
+    }).catch(err => {
+        console.error('Failed to connect to MongoDB:', err);
     });
-}).catch(err => {
-    console.error('Failed to connect to MongoDB:', err);
+    console.log(`Socket server is running on http://localhost:${port}`);
 });

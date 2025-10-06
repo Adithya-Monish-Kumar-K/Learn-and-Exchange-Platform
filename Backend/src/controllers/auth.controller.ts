@@ -65,7 +65,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     const userData = {
-      userid: user._id,
+      userId: user._id,
       email: user.email,
       name: user.name,
       role: user.role,
@@ -85,7 +85,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     res.cookie('refreshToken', refreshToken, cookieOptions);
-    
+
     const { secret_key, ...filteredUserData } = userData as any;
 
     res.status(200).json({
@@ -93,7 +93,7 @@ export const loginUser = async (req: Request, res: Response) => {
       token,
       user: filteredUserData,
     });
-    } catch (error) {
+  } catch (error) {
     console.error('Error logging in user:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
@@ -294,8 +294,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       process.env.REFRESH_SECRET_KEY as string
     );
 
-    const { userid, email, name, role, isActive } = userData as any;
-    const token = await createToken({ userid, email, name, role, isActive });
+    const { userId, email, name, role, isActive } = userData as any;
+    const token = await createToken({ userId, email, name, role, isActive });
     res.json({ token });
   } catch (err) {
     return res

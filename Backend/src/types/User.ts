@@ -9,6 +9,7 @@ export interface IUser {
   bio?: string;
   skills?: { name: string; level?: string; years?: number }[];
   qualifications?: { title: string; institution: string; year: number }[];
+  projects?: { title: string; description: string; link?: string }[];
   experience?: { company: string; role: string; duration: string; description?: string }[];
   certifications?: (string | Types.ObjectId)[];
   links?: string[];
