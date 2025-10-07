@@ -1,5 +1,3 @@
-import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
