@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import apiClient from '../services/apiClient';
 import {
   MessageCircle,
@@ -50,7 +49,6 @@ const Dashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar isAuthenticated />
         <div className="flex items-center justify-center h-[70vh]">
           <div className="animate-spin h-12 w-12 rounded-full border-4 border-blue-600 border-t-transparent" />
         </div>
@@ -60,12 +58,11 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar isAuthenticated user={user} />
-      <div className="flex h-[calc(100vh-4rem)]">
-        <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <div className="flex h-screen">
+        <aside className="w-75 bg-white border-r border-gray-200 flex flex-col">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full p-3 bg-blue-100 flex items-center justify-center">
                 <Users className="w-6 h-6 text-blue-600" />
               </div>
               <div>
