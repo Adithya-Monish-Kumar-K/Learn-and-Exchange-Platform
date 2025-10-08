@@ -7,14 +7,12 @@ export interface IUserModel extends Model<IUserDocument> {}
 
 const UserSchema: Schema<IUserDocument> = new Schema(
   {
-    username: {
+    name: {
       type: String,
-      required: [true, 'Username is required'],
+      required: [true, 'Name is required'],
       trim: true,
-      minlength: [2, 'Username must be at least 2 characters'],
-      maxlength: [50, 'Username cannot exceed 50 characters'],
-  unique: true,
-      alias: 'name',
+      minlength: [2, 'Name must be at least 2 characters'],
+      maxlength: [50, 'Name cannot exceed 50 characters'],
     },
     email: {
       type: String,
@@ -44,41 +42,48 @@ const UserSchema: Schema<IUserDocument> = new Schema(
       default: 'user',
     },
     bio: { type: String, maxlength: 500 },
-    skills: [{ type: String, trim: true }],
-  links: [{ type: String, trim: true }],
-  experience: [{ type: String, trim: true }],
-  certifications: [{ type: Schema.Types.ObjectId, ref: 'Asset' }],
-    credit: { type: Number, default: 0, min: 0 },
+    skills: [
+      {
+        name: { type: String, required: true },
+        level: { type: String },
+        years: { type: Number },
+      },
+    ],
+    qualifications: [
+      {
+        title: { type: String, required: true },
+        institution: { type: String, required: true },
+        year: { type: Number, required: true },
+      },
+    ],
+    experience: [
+      {
+        company: { type: String, required: true },
+        role: { type: String, required: true },
+        duration: { type: String, required: true },
+        description: { type: String },
+      },
+    ],
+    certifications: [{ type: Schema.Types.ObjectId, ref: 'Asset' }],
+    links: [{ type: String }],
+    recommendations: [
+      {
+        fromUser: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        message: { type: String, required: true },
+        date: { type: Date, default: Date.now },
+      },
+    ],
     tasksPosted: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
     tasksCompleted: [{ type: Schema.Types.ObjectId, ref: 'Task' }],
     resume: { type: Schema.Types.ObjectId, ref: 'Asset' },
     profileImage: { type: Schema.Types.ObjectId, ref: 'Asset' },
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
-    reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }],
   },
-  {
-    timestamps: true,
-    versionKey: false,
-    toJSON: {
-      virtuals: true,
-      transform: (_doc: any, ret: any) => {
-        ret.id = ret._id;
-        delete ret._id;
-      },
-    },
-    toObject: { virtuals: true },
-  }
+  { timestamps: true }
 );
 
-UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ phone: 1 }, { unique: true });
-UserSchema.index({ username: 1 }, { unique: true });
-
-UserSchema.pre<IUserDocument>('save', async function (
-  this: any,
-  next: (err?: any) => void
-) {
+UserSchema.pre<IUserDocument>('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
