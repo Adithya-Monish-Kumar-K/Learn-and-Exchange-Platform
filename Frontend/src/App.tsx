@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import UserProfileFormClass from './components/forms/UserProfileForm';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -28,6 +29,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={<UserProfileFormClass />}
           <Route
             path="/user/chat"
             element={

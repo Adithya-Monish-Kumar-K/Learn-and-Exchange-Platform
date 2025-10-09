@@ -129,13 +129,23 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const verifyMainToken = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    // tokenValidator now attaches decoded claims to req.auth instead of mutating req.body
+    const auth = (req as any).auth as {
+      email?: string;
+      name?: string;
+      userid?: string;
+      role?: string;
+      isActive?: boolean;
+    } | undefined;
 
-    const user = await User.findOne({ email: req.body.email });
+    if (!auth || !auth.email) {
+      return res.status(401).json({ message: 'Invalid or expired token' });
+    }
+
+    // Fetch fresh user document to include latest phone / verification state
+    const user = await User.findOne({ email: auth.email });
     if (!user) {
-      return res.status(401).json({
-        message: 'User not found',
-      });
+      return res.status(401).json({ message: 'Invalid or expired token' });
     }
 
     return res.status(200).json({
@@ -144,6 +154,7 @@ export const verifyMainToken = async (req: Request, res: Response) => {
       user: {
         email: user.email,
         name: user.name,
+        phone: user.phone,
         role: user.role,
         isActive: user.isActive,
         isVerified: user.isVerified,
@@ -255,6 +266,10 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
 
     const { name } = existingUser;
+
+    if (!name) {
+      return res.status(400).json({ message: 'User name not found' });
+    }
 
     await sendforgotEmail(email, name);
 
