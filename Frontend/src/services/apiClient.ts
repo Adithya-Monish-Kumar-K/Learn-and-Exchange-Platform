@@ -34,18 +34,25 @@ class APIClient {
   private client: AxiosInstance;
   private accessToken: string | null;
   private user: StoredUser | null;
+  private isRefreshing = false;
+  private refreshQueue: {
+    resolve: (v?: any) => void;
+    reject: (e: any) => void;
+  }[] = [];
+  private refreshTimer: number | null = null;
 
   constructor() {
     this.accessToken = localStorage.getItem('accessToken');
     this.user = this.getStoredUser();
-
     this.client = axios.create({
       baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
       withCredentials: true,
       timeout: 15000,
     });
-
     this.setupInterceptors();
+    if (this.accessToken) {
+      this.scheduleProactiveRefresh(this.accessToken);
+    }
   }
 
   // ---------- Interceptors & Logging ----------
@@ -65,8 +72,27 @@ class APIClient {
         this.logResponse(response.config, response.status, response.data);
         return response;
       },
-      (error: AxiosError) => {
+      async (error: AxiosError) => {
+        const original: any = error.config;
         const status = error.response?.status;
+
+        // Attempt silent refresh on 401 (once)
+        if (
+          status === 401 &&
+          !original._retry &&
+          !this.isUnprotectedPath(original?.url)
+        ) {
+          original._retry = true;
+          try {
+            const newToken = await this.refreshAccessToken();
+            original.headers = original.headers || {};
+            original.headers.Authorization = `Bearer ${newToken}`;
+            return this.client(original);
+          } catch (refreshErr) {
+            this.logout();
+          }
+        }
+
         if (status === 401 && !this.isUnprotectedPath(error.config?.url)) {
           this.logout();
         }
@@ -207,9 +233,38 @@ class APIClient {
     return !!this.accessToken;
   }
 
+  private decodeJwt(token: string): { exp?: number } {
+    try {
+      const payload = token.split('.')[1];
+      const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(json);
+    } catch {
+      return {};
+    }
+  }
+
+  private scheduleProactiveRefresh(token: string) {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+    const { exp } = this.decodeJwt(token);
+    if (!exp) return;
+    const expiresMs = exp * 1000;
+    const now = Date.now();
+    const lead = 60 * 1000; // refresh 60s before expiry
+    const delay = Math.max(expiresMs - now - lead, 0);
+    this.refreshTimer = window.setTimeout(() => {
+      this.refreshAccessToken().catch(() => {
+        this.logout();
+      });
+    }, delay);
+  }
+
   setToken(token: string) {
     this.accessToken = token;
     localStorage.setItem('accessToken', token);
+    this.scheduleProactiveRefresh(token);
   }
 
   setUser(user: StoredUser) {
@@ -236,7 +291,42 @@ class APIClient {
     this.user = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
     console.info('[AUTH] Logged out; tokens cleared');
+  }
+
+  private processRefreshQueue(error: any, newToken?: string) {
+    this.refreshQueue.forEach(({ resolve, reject }) => {
+      if (error) reject(error);
+      else resolve(newToken);
+    });
+    this.refreshQueue = [];
+  }
+
+  private async refreshAccessToken(): Promise<string> {
+    if (this.isRefreshing) {
+      return new Promise((resolve, reject) => {
+        this.refreshQueue.push({ resolve, reject });
+      });
+    }
+    this.isRefreshing = true;
+    try {
+      console.log('[AUTH] Refreshing access token...');
+      const { data } = await this.client.post('/auth/refresh-token'); // cookie supplies refresh
+      const newToken = data?.token;
+      if (!newToken) throw new Error('No token returned on refresh');
+      this.setToken(newToken);
+      this.processRefreshQueue(null, newToken);
+      return newToken;
+    } catch (e) {
+      this.processRefreshQueue(e);
+      throw e;
+    } finally {
+      this.isRefreshing = false;
+    }
   }
 
   // ---------- Helper wrapper ----------
@@ -292,7 +382,11 @@ class APIClient {
 
   // Login (standard)
   async login(payload: LoginPayload) {
-    const safe = { email: payload.email, password: payload.password, rememberme: !!payload.rememberme };
+    const safe = {
+      email: payload.email,
+      password: payload.password,
+      rememberme: !!payload.rememberme,
+    };
     return this.exec('Login', async () => {
       const { data } = await this.client.post('/auth/login', safe);
       if (data?.token) this.setToken(data.token);
