@@ -3,6 +3,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosError,
 } from 'axios';
+import { removeItem } from 'framer-motion';
 
 interface StoredUser {
   _id: string;
@@ -291,6 +292,7 @@ class APIClient {
     this.user = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('isLoggedIn');
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
       this.refreshTimer = null;
