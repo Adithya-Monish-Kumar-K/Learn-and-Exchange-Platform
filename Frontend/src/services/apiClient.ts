@@ -3,6 +3,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosError,
 } from 'axios';
+import { removeItem } from 'framer-motion';
 
 interface StoredUser {
   _id: string;
@@ -291,6 +292,7 @@ class APIClient {
     this.user = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('isLoggedIn');
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
       this.refreshTimer = null;
@@ -444,72 +446,7 @@ class APIClient {
   // Current user
   async verifyToken() {
     return this.exec('Verify Session', async () => {
-      const { data } = await this.client.get('/auth/verify-token');
-      return data;
-    });
-  }
-
-  // Fetch full user profile by email
-  async getUserByEmail(email: string) {
-    return this.exec('Get User By Email', async () => {
-      const { data } = await this.client.post(`/users/email`, { email });
-      return data;
-    });
-  }
-
-  // Partial update user (by email) - only allowed editable fields
-  async updateUserByEmail(email: string, payload: {
-    name?: string;
-    phone?: string;
-    bio?: string;
-    skills?: Array<{ name: string; level?: string; years?: number }>;
-    qualifications?: Array<{ title: string; institution: string; year: number }>;
-    experience?: Array<{ company: string; role: string; duration: string; description?: string }>;
-    links?: string[];
-  }) {
-    // Build body with ONLY allowed, non-empty fields to avoid zod unrecognized_keys & model constraints
-    const body: Record<string, unknown> = { email };
-    if (payload.name && payload.name.trim()) body.name = payload.name.trim();
-    if (payload.phone && payload.phone.trim()) body.phone = payload.phone.trim();
-    if (typeof payload.bio === 'string' && payload.bio.trim()) body.bio = payload.bio.trim();
-    if (Array.isArray(payload.links)) {
-      const links = payload.links
-        .map(l => (typeof l === 'string' ? l.trim() : ''))
-        .filter(l => !!l);
-      if (links.length) body.links = links;
-    }
-    if (Array.isArray(payload.skills)) {
-      const skills = payload.skills
-        .filter(s => s && typeof s.name === 'string' && s.name.trim())
-        .map(s => {
-          const o: { name: string; level?: string; years?: number } = { name: s.name.trim() };
-          if (s.level && s.level.trim()) o.level = s.level.trim();
-          if (typeof s.years === 'number' && s.years >= 0) o.years = s.years;
-          return o;
-        });
-      if (skills.length) body.skills = skills;
-    }
-    if (Array.isArray(payload.qualifications)) {
-      const qualifications = payload.qualifications.filter(q => q && q.title && q.institution && q.year);
-      if (qualifications.length) body.qualifications = qualifications;
-    }
-    if (Array.isArray(payload.experience)) {
-      const experience = payload.experience.filter(ex => ex && ex.company && ex.role && ex.duration);
-      if (experience.length) body.experience = experience;
-    }
-    return this.exec('Update User By Email (PATCH)', async () => {
-      const { data } = await this.client.patch('/users/email', body);
-      // If the backend responds with updated user, optionally refresh local stored user basics
-      if (data?.email && this.user && this.user.email === data.email) {
-        const nextUser: StoredUser = {
-          _id: data._id || this.user._id,
-            name: data.name || this.user.name,
-            email: data.email,
-            role: data.role || this.user.role,
-            phone: data.phone || payload.phone || this.user.phone,
-        };
-        this.setUser(nextUser);
-      }
+      const { data } = await this.client.get('/auth/me');
       return data;
     });
   }

@@ -7,7 +7,6 @@ import {
 } from './template';
 import { registermailtoken, forgotmailtoken } from '../auth/tokenCreation';
 
-// Nodemailer transporter setup using environment variables
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
@@ -33,7 +32,7 @@ export const sendregisterEmail = async (
       const token = await registermailtoken(tokenData);
       console.log(token);
 
-      const verificationUrl = `${process.env.STATIC_URL}/auth/password?token=${token}&type=register`;
+      const verificationUrl = `${process.env.STATIC_URL}/set-password?token=${token}&type=register`;
 
       const htmlContent = TEMPLATE_WELCOME_MAIL(name, verificationUrl);
 
@@ -73,7 +72,7 @@ export const sendforgotEmail = async (
       const token = await forgotmailtoken(tokenData);
       console.log(token);
 
-      const verificationUrl = `${process.env.STATIC_URL}/auth/password?token=${token}&type=forgot`;
+      const verificationUrl = `${process.env.STATIC_URL}/reset-password?token=${token}&type=forgot`;
 
       const htmlContent = TEMPLATE_RESET_MAIL(name, verificationUrl);
 

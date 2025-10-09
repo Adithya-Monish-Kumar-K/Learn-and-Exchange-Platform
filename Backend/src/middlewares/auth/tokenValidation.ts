@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import { Request, Response, NextFunction } from 'express';
 
+dotenv.config();
+
 const {
   V4: { verify },
 } = paseto as any;
@@ -26,6 +28,27 @@ function getPublicKey(): Buffer | string {
   }
 }
 
+function attachNormalizedUser(req: Request, payload: any) {
+  const userid = payload.userid ?? payload.userId;
+  const email = payload.email;
+  const name = payload.name;
+  const role = payload.role;
+  const isActive = payload.isActive;
+
+  // attach both req.user and req.body.userid for compatibility
+  (req as any).user = {
+    userid,
+    _id: userid, // controllers that expect req.user._id will work
+    email,
+    name,
+    role,
+    isActive,
+  };
+
+  if (!req.body) (req as any).body = {};
+  (req as any).body.userid = userid;
+}
+
 export async function tokenValidator(
   req: Request,
   res: Response,
@@ -42,14 +65,17 @@ export async function tokenValidator(
 
   try {
     const public_key = getPublicKey();
-    const payload = await verify(token, public_key);
+    const payload = (await verify(token, public_key)) as any;
 
+    // accept both userid and userId from token payload
+    const userid = payload?.userid ?? payload?.userId;
+    
     // Don't mutate req.body (causes unrecognized_keys in downstream validation). Attach to request context instead.
     interface AuthAugmentedRequest extends Request { auth?: any }
     const areFieldsPresent = (
       payload &&
       payload.secret_key === secret_key &&
-      payload.userid &&
+      userid &&
       payload.email &&
       payload.name &&
       payload.role &&
@@ -95,37 +121,28 @@ export async function admintokenValidator(
 
   try {
     const public_key = getPublicKey();
-    const payload = await verify(token, public_key);
+    const payload = (await verify(token, public_key)) as any;
 
-    if (!req.body) {
-      req.body = {};
-    }
+    const userid = payload?.userid ?? payload?.userId;
 
-    // Only assign the fields present in your token payload
     if (
       payload &&
       payload.secret_key === secret_key &&
-      payload.userid &&
+      userid &&
       payload.email &&
       payload.name &&
       payload.role &&
       typeof payload.isActive !== 'undefined'
     ) {
-      req.body.userid = payload.userid;
-      req.body.email = payload.email;
-      req.body.name = payload.name;
-      req.body.role = payload.role;
-      req.body.isActive = payload.isActive;
+      attachNormalizedUser(req, payload);
 
-      console.log('Token payload:', payload);
-      console.log('User details added to request body:');
-      if (payload.role !== 'admin') {
+      if ((req as any).user.role !== 'admin') {
         return res
           .status(401)
           .send({ message: 'You are not authorized to access this resource.' });
       }
 
-      next();
+      return next();
     } else {
       console.log('Invalid token payload:', payload);
       return res.status(401).send({ MESSAGE: 'Invalid token payload.' });
@@ -138,6 +155,8 @@ export async function admintokenValidator(
   }
 }
 
+// readverifyRegisterTokens, readverifyForgotToken, verifyRegisterToken, verifyForgotToken
+// remain unchanged (they set req.body.email/name and validate mail/forgot tokens)
 export async function readverifyRegisterTokens(
   req: Request,
   res: Response,
@@ -157,11 +176,9 @@ export async function readverifyRegisterTokens(
     console.log('Token found in database:', existingToken);
 
     if (!existingToken) {
-      return res
-        .status(401)
-        .send({
-          MESSAGE: 'Token not found in database or has already been used.',
-        });
+      return res.status(401).send({
+        MESSAGE: 'Token not found in database or has already been used.',
+      });
     }
 
     const public_key = getPublicKey();
@@ -172,7 +189,6 @@ export async function readverifyRegisterTokens(
     }
     console.log('Decoded payload:', payload);
 
-    // Only assign the fields present in your token payload
     if (
       payload &&
       payload.secret_key === mail_secret_key &&
@@ -182,7 +198,6 @@ export async function readverifyRegisterTokens(
       req.body.email = payload.email;
       req.body.name = payload.name;
 
-      // Optionally add phone if present in payload
       if (payload.phone) req.body.phone = payload.phone;
       if (payload.role) req.body.role = payload.role;
 
@@ -221,11 +236,9 @@ export async function readverifyForgotToken(
     console.log('Token found in database:', existingToken);
 
     if (!existingToken) {
-      return res
-        .status(401)
-        .send({
-          MESSAGE: 'Token not found in database or has already been used.',
-        });
+      return res.status(401).send({
+        MESSAGE: 'Token not found in database or has already been used.',
+      });
     }
 
     const public_key = getPublicKey();
@@ -236,7 +249,6 @@ export async function readverifyForgotToken(
     }
     console.log('Decoded payload:', payload);
 
-    // Only assign the fields present in your token payload
     if (
       payload &&
       payload.secret_key === forgot_secret_key &&
@@ -281,7 +293,6 @@ export async function verifyRegisterToken(
       req.body = {};
     }
 
-    // Only assign the fields present in your token payload
     if (
       payload &&
       payload.secret_key === mail_secret_key &&
@@ -299,7 +310,6 @@ export async function verifyRegisterToken(
       req.body.email = payload.email;
       req.body.name = payload.name;
 
-      // Optionally add phone if present in payload
       if (payload.phone) req.body.phone = payload.phone;
       if (payload.role) req.body.role = payload.role;
       console.log('Token payload:', payload);
@@ -339,7 +349,6 @@ export async function verifyForgotToken(
       req.body = {};
     }
 
-    // Only assign the fields present in your token payload
     if (
       payload &&
       payload.secret_key === forgot_secret_key &&
@@ -372,4 +381,4 @@ export async function verifyForgotToken(
       .status(401)
       .send({ MESSAGE: 'Invalid or expired forgot token: ' + err.message });
   }
-};
+}

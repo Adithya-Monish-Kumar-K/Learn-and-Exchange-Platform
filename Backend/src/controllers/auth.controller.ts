@@ -1,5 +1,3 @@
-import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
@@ -9,8 +7,28 @@ import {
   createToken,
   createRefreshToken,
 } from '../middlewares/auth/tokenCreation';
-
 import { sendregisterEmail, sendforgotEmail } from '../middlewares/mail/mail';
+
+const REFRESH_COOKIE_NAME = 'refreshToken';
+
+function setRefreshCookie(res: Response, token: string) {
+  res.cookie(REFRESH_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== 'development', // true in production
+    sameSite: 'strict',
+    path: '/api/auth', // restrict to auth endpoints
+    maxAge: 7 * 24 * 60 * 60 * 1000, // fallback (7d) – actual lifetime enforced by token exp
+  });
+}
+
+function clearRefreshCookie(res: Response) {
+  res.clearCookie(REFRESH_COOKIE_NAME, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== 'development',
+    sameSite: 'strict',
+    path: '/api/auth',
+  });
+}
 
 export const verifyToken = async (req: Request, res: Response) => {
   try {
@@ -48,6 +66,12 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password, rememberme } = req.body;
 
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: 'Email and password are required' });
+    }
+
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(400).json({ message: 'Invalid email' });
@@ -64,38 +88,42 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid password' });
     }
 
-    const userData = {
-      userid: user._id,
+    const accessToken = await createToken({
+      userid: user.id.toString(),
       email: user.email,
       name: user.name,
       role: user.role,
       isActive: user.isActive,
-    };
-
-    const token = await createToken(userData);
-    const refreshToken = createRefreshToken(userData, rememberme);
-
-    const cookieOptions: any = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    };
-    if (rememberme) {
-      cookieOptions.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
-    }
-
-    res.cookie('refreshToken', refreshToken, cookieOptions);
-    
-    const { secret_key, ...filteredUserData } = userData as any;
-
-    res.status(200).json({
-      message: 'Login successful',
-      token,
-      user: filteredUserData,
     });
-    } catch (error) {
-    console.error('Error logging in user:', error);
-    res.status(500).json({ message: 'Internal server error' });
+
+    const refreshToken = createRefreshToken(
+      {
+        userid: user.id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        isActive: user.isActive,
+      },
+      !!rememberme
+    );
+
+    setRefreshCookie(res, refreshToken);
+
+    return res.status(200).json({
+      message: 'Login successful',
+      token: accessToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        isActive: user.isActive,
+      },
+    });
+  } catch (err: any) {
+    console.error('Error logging in user:', err);
+    return res.status(500).json({ message: 'Server error during login' });
   }
 };
 
@@ -299,22 +327,42 @@ export const resetPassword = async (req: Request, res: Response) => {
 };
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken;
-  if (!refreshToken)
-    return res.status(401).json({ message: 'Refresh token required' });
-
   try {
-    const userData = jwt.verify(
-      refreshToken,
-      process.env.REFRESH_SECRET_KEY as string
-    );
+    const cookieToken = req.cookies?.refreshToken;
+    if (!cookieToken) {
+      return res.status(401).json({ message: 'Missing refresh token' });
+    }
 
-    const { userid, email, name, role, isActive } = userData as any;
-    const token = await createToken({ userid, email, name, role, isActive });
-    res.json({ token });
-  } catch (err) {
+    // Verify refresh token (keep your existing verification logic)
+    const decoded = jwt.verify(cookieToken, process.env.REFRESH_SECRET_KEY!);
+
+    // Re-issue new access token
+    const newAccessToken = await createToken({
+      userid: (decoded as any).userid,
+      email: (decoded as any).email,
+      name: (decoded as any).name,
+      role: (decoded as any).role,
+      isActive: (decoded as any).isActive,
+    });
+
+    // Optional: rotate refresh token (recommended)
+    // const rotatedRefresh = createRefreshToken({...}, true/false);
+    // setRefreshCookie(res, rotatedRefresh);
+
+    return res.status(200).json({
+      message: 'Access token refreshed',
+      token: newAccessToken,
+    });
+  } catch (err: any) {
+    console.error('Refresh token error:', err.message);
+    clearRefreshCookie(res);
     return res
-      .status(403)
+      .status(401)
       .json({ message: 'Invalid or expired refresh token' });
   }
+};
+
+export const logoutUser = async (_req: Request, res: Response) => {
+  clearRefreshCookie(res);
+  return res.status(200).json({ message: 'Logged out' });
 };

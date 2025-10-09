@@ -15,16 +15,13 @@ const About: React.FC = () => {
 						</div>
 
 						<nav className="hidden md:flex space-x-8">
-							<a href="#" className="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
-							<a href="#" className="text-gray-900 font-medium transition-colors">About</a>
-							<a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-							<a href="#contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
+							<a href="/" className="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
+							<a href="/about" className="text-gray-900 font-medium transition-colors">About</a>
+							<a href="/features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
+							<a href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
 						</nav>
 
 						<div className="hidden md:flex items-center gap-3">
-							<a href="/" className="text-blue-600 hover:text-blue-700 inline-flex items-center">
-								<ArrowLeft className="h-4 w-4 mr-1" /> Home
-							</a>
 							<button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
 								Get Started
 							</button>
