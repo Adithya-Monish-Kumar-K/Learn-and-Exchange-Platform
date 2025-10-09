@@ -1,12 +1,20 @@
-import UserProfileForm from './components/forms/UserProfileForm';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Login from './pages/Login';
+import UserProfileFormClass from './components/forms/UserProfileForm';
 
 function App() {
   return (
-    <div style={{ padding: 16, maxWidth: 1200, margin: '0 auto' }}>
-      <h1 className="text-center font-bold text-5xl" style={{ marginBottom: 16 }}>Learn and Exchange</h1>
-
-  <UserProfileForm onSubmit={(d) => console.log('profile submit', d)} onDeactivate={() => console.log('deactivate clicked')} />
-    </div>
+    <Router>
+      <>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={<UserProfileFormClass />}
+          />
+        </Routes>
+      </>
+    </Router>
   );
 }
 

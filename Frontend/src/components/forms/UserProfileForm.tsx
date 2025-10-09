@@ -1,544 +1,258 @@
+// Clean simplified component re-declared (previous version removed entirely)
 import React from 'react';
+import apiClient from '../../services/apiClient';
+import UpdateUserProfileForm from './UpdateUserProfileForm';
 
-export type PortfolioItem = { url: string; title?: string };
+// Raw backend union shapes (kept narrow to avoid 'any')
+type SkillRaw = { name?: string; level?: string; years?: number } | string | null | undefined;
+type QualificationRaw = { title?: string; institution?: string; year?: number } | null | undefined;
+type ExperienceRaw = { company?: string; role?: string; duration?: string; description?: string } | null | undefined;
+type RecommendationRaw = { fromUser?: string | { _id?: string }; message?: string; date?: string | Date } | null | undefined;
+type IdLike = string | { _id?: string } | null | undefined;
 
-export type UserProfileFormData = {
-  username: string;
-  email: string;
-  phone?: string;
-  skills: string[];
-  portfolio: PortfolioItem[];
-  linkedTaskIds: string[]; // references to Tasks Component
-  linkedReviewIds: string[]; // references to Reviews Module
-  // Read-only fields coming from backend user model (display only)
-  bio?: string;
-  links?: string[];
-  experience?: string[];
-  certifications?: string[]; // existing server-side attachments (read-only)
-  certificationFiles?: File[]; // UI-only: files selected to upload
-  credit?: number;
-  tasksPosted?: string[];
-  tasksCompleted?: string[];
-  resume?: string; // existing server-side attachment (read-only)
-  resumeFile?: File | null; // UI-only: selected resume to upload
-  profileImage?: string; // may be URL/asset id from backend (read-only)
-  profileImageFile?: File | null; // UI-only: selected new image to upload
-  reviews?: string[];
-};
-
-export type UserProfileFormProps = {
-  initial?: Partial<UserProfileFormData>;
-  onSubmit?: (data: UserProfileFormData) => void;
-  onDeactivate?: () => void;
-};
-
-const emptyForm: UserProfileFormData = {
-  username: '',
-  email: '',
-  phone: '',
-  skills: [],
-  portfolio: [],
-  linkedTaskIds: [],
-  linkedReviewIds: [],
-  bio: undefined,
-  links: [],
-  experience: [],
-  certifications: [],
-  certificationFiles: [],
-  credit: undefined,
-  tasksPosted: [],
-  tasksCompleted: [],
-  resume: undefined,
-  resumeFile: null,
-  profileImage: undefined,
-  profileImageFile: null,
-  reviews: [],
-};
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>{children}</label>;
+interface BackendUserRaw {
+  name?: string; email?: string; phone?: string; role?: string; bio?: string;
+  skills?: SkillRaw[];
+  qualifications?: QualificationRaw[];
+  experience?: ExperienceRaw[];
+  certifications?: IdLike[];
+  links?: (string | null | undefined)[];
+  recommendations?: RecommendationRaw[];
+  tasksPosted?: IdLike[];
+  tasksCompleted?: IdLike[];
+  resume?: IdLike;
+  profileImage?: IdLike;
 }
 
-function Chip({ text, onRemove, href }: { text: string; onRemove?: () => void; href?: string }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        background: '#eef2ff',
-        color: '#1f2937',
-        border: '1px solid #c7d2fe',
-        padding: '4px 8px',
-        borderRadius: 999,
-        marginRight: 8,
-        marginBottom: 8,
-      }}
-    >
-      {href ? (
-        <a href={href} target="_blank" rel="noreferrer" style={{ color: '#1f2937', textDecoration: 'underline' }}>
-          {text}
-        </a>
-      ) : (
-        text
-      )}
-      {onRemove ? (
-        <button aria-label={`remove ${text}`} onClick={onRemove} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>
-          ×
-        </button>
-      ) : null}
-    </span>
-  );
-}
-
-class UserProfileFormClass extends React.Component<UserProfileFormProps, {
-  form: UserProfileFormData;
-  skillInput: string;
-  portfolioUrl: string;
-  portfolioTitle: string;
-  linkInput: string;
-  expInput: string;
-  previewUrl?: string;
-  certPreviewUrls: string[];
-  resumePreviewUrl?: string;
-  original: UserProfileFormData; // snapshot to detect changes
-  errors: { phone?: string; submit?: string };
-  dirty: boolean;
-}> {
-  private certFileRef = React.createRef<HTMLInputElement>();
-  private resumeFileRef = React.createRef<HTMLInputElement>();
-  private fileRef = React.createRef<HTMLInputElement>();
-
-  constructor(props: UserProfileFormProps) {
-    super(props);
-    const initial = { ...emptyForm, ...(props.initial || {}) } as UserProfileFormData;
-    let preview: string | undefined;
-    if (initial.profileImage && /^(https?:\/\/|data:image\/)/i.test(initial.profileImage)) preview = initial.profileImage;
-    this.state = {
-      form: initial,
-      skillInput: '',
-      portfolioUrl: '',
-      portfolioTitle: '',
-      linkInput: '',
-      expInput: '',
-      previewUrl: preview,
-      certPreviewUrls: [],
-      resumePreviewUrl: undefined,
-      original: { ...initial },
-      errors: {},
-      dirty: false,
-    };
+const toId = (v: unknown): string | undefined => {
+  if (!v) return undefined;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'object') {
+    const obj = v as { _id?: unknown };
+    if (typeof obj._id === 'string') return obj._id;
   }
+  return undefined;
+};
 
-  componentDidUpdate(_prevProps: UserProfileFormProps, prevState: Readonly<typeof this.state>) {
-    // Sync preview if backend profileImage changes and no file selected
-    if (!this.state.form.profileImageFile && this.state.form.profileImage !== prevState.form.profileImage) {
-      const v = this.state.form.profileImage;
-      if (v && /^(https?:\/\/|data:image\/)/i.test(v)) {
-        this.setState({ previewUrl: v });
-      }
-    }
-    // Rebuild certification previews if file list changed
-    if (prevState.form.certificationFiles !== this.state.form.certificationFiles) {
-      prevState.certPreviewUrls.forEach((u) => { if (u && u.startsWith('blob:')) URL.revokeObjectURL(u); });
-      const urls = (this.state.form.certificationFiles || []).map(f => URL.createObjectURL(f));
-      this.setState({ certPreviewUrls: urls });
-    }
-    // Rebuild resume preview
-    if (prevState.form.resumeFile !== this.state.form.resumeFile) {
-      if (prevState.resumePreviewUrl && prevState.resumePreviewUrl.startsWith('blob:')) URL.revokeObjectURL(prevState.resumePreviewUrl);
-      if (this.state.form.resumeFile) {
-        const url = URL.createObjectURL(this.state.form.resumeFile);
-        this.setState({ resumePreviewUrl: url });
-      } else {
-        this.setState({ resumePreviewUrl: undefined });
-      }
-    }
-  }
-
-  componentWillUnmount(): void {
-    const { previewUrl, certPreviewUrls, resumePreviewUrl } = this.state;
-    if (previewUrl && previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
-    certPreviewUrls.forEach(u => { if (u && u.startsWith('blob:')) URL.revokeObjectURL(u); });
-    if (resumePreviewUrl && resumePreviewUrl.startsWith('blob:')) URL.revokeObjectURL(resumePreviewUrl);
-  }
-
-  update<K extends keyof UserProfileFormData>(key: K, value: UserProfileFormData[K]) {
-    this.setState(s => {
-      const next = { ...s.form, [key]: value };
-      const dirty = !this.shallowEqual(next, s.original);
-      const errors = { ...s.errors };
-      if (key === 'phone') {
-        errors.phone = this.validatePhone(next.phone || '');
-      }
-      return { form: next, dirty, errors };
-    });
-  }
-  shallowEqual(a: UserProfileFormData, b: UserProfileFormData): boolean {
-    const keys = new Set([ ...Object.keys(a), ...Object.keys(b) ]);
-    for (const k of keys) {
-      const av = (a as Record<string, unknown>)[k];
-      const bv = (b as Record<string, unknown>)[k];
-      if (Array.isArray(av) && Array.isArray(bv)) {
-        if (av.length !== bv.length) return false;
-        for (let i=0;i<av.length;i++) { if (JSON.stringify(av[i]) !== JSON.stringify(bv[i])) return false; }
-      } else if (JSON.stringify(av) !== JSON.stringify(bv)) {
-        return false;
-      }
-    }
-    return true;
-  }
-  validatePhone(v: string): string | undefined {
-    if (!v) return 'Phone is required';
-    const digits = v.replace(/\D/g,'');
-    if (digits.length !== 10) return 'Phone must be exactly 10 digits';
-    return undefined;
-  }
-  addSkill = () => {
-    const v = this.state.skillInput.trim();
-    if (!v) return;
-    if (this.state.form.skills.includes(v)) return this.setState({ skillInput: '' });
-    this.update('skills', [...this.state.form.skills, v]);
-    this.setState({ skillInput: '' });
-  };
-  addPortfolio = () => {
-    const u = this.state.portfolioUrl.trim();
-    if (!u) return;
-    this.update('portfolio', [...this.state.form.portfolio, { url: u, title: this.state.portfolioTitle.trim() || undefined }]);
-    this.setState({ portfolioUrl: '', portfolioTitle: '' });
-  };
-  addLink = () => {
-    const v = this.state.linkInput.trim();
-    if (!v) return;
-    if (this.state.form.links?.includes(v)) return this.setState({ linkInput: '' });
-    this.update('links', [...(this.state.form.links || []), v]);
-    this.setState({ linkInput: '' });
-  };
-  addExperience = () => {
-    const v = this.state.expInput.trim();
-    if (!v) return;
-    this.update('experience', [...(this.state.form.experience || []), v]);
-    this.setState({ expInput: '' });
-  };
-  onCertFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    this.update('certificationFiles', [...(this.state.form.certificationFiles || []), ...files]);
-  };
-  removeCertFile = (index: number) => {
-    const next = [...(this.state.form.certificationFiles || [])];
-    next.splice(index, 1);
-    this.update('certificationFiles', next);
-    if (this.certFileRef.current && next.length === 0) this.certFileRef.current.value = '';
-  };
-  clearCertFiles = () => {
-    this.update('certificationFiles', []);
-    if (this.certFileRef.current) this.certFileRef.current.value = '';
-  };
-  onResumeFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    this.update('resumeFile', file);
-  };
-  removeResumeFile = () => {
-    this.update('resumeFile', null);
-    if (this.resumeFileRef.current) this.resumeFileRef.current.value = '';
-  };
-  onPickImageClick = () => {
-    this.fileRef.current?.click();
-  };
-  onImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    this.setState(s => ({ form: { ...s.form, profileImageFile: file, profileImage: undefined } }));
-    const url = URL.createObjectURL(file);
-    this.setState(prev => {
-      if (prev.previewUrl && prev.previewUrl.startsWith('blob:')) URL.revokeObjectURL(prev.previewUrl);
-      return { previewUrl: url } as Pick<typeof this.state, 'previewUrl'>;
-    });
-  };
-  removeImage = () => {
-    const { previewUrl } = this.state;
-    if (previewUrl && previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
-    this.setState(s => ({ previewUrl: undefined, form: { ...s.form, profileImageFile: null, profileImage: undefined } }));
-    if (this.fileRef.current) this.fileRef.current.value = '';
-  };
-  handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const { errors, form, dirty } = this.state;
-    const phoneError = this.validatePhone(form.phone || '');
-    const nextErrors = { ...errors, phone: phoneError };
-    if (phoneError || !dirty) {
-      if (!dirty) nextErrors.submit = 'Please edit at least one field before saving';
-      this.setState({ errors: nextErrors });
-      return;
-    }
-    this.setState({ errors: {} });
-    this.props.onSubmit?.(form);
-  };
-
-  render() {
-    const { onDeactivate } = this.props;
-    const { form, skillInput, portfolioUrl, portfolioTitle, linkInput, expInput, previewUrl, certPreviewUrls, resumePreviewUrl, errors, dirty } = this.state;
-    return (
-    <form onSubmit={this.handleSubmit} style={{ maxWidth: 960, margin: '0 auto', padding: 16 }}>
-      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>User Profile</h2>
-      {errors.submit && <p style={{ color: '#dc2626', marginTop: 0 }}>{errors.submit}</p>}
-
-      {/* Profile image at top (editable only via upload) */}
-      <section style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-        <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#e5e7eb', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {previewUrl ? (
-            <a href={previewUrl} target="_blank" rel="noreferrer" title="View full image">
-              <img src={previewUrl} alt="Profile" style={{ width: '72px', height: '72px', objectFit: 'cover', display: 'block' }} />
-            </a>
-          ) : (
-            <span style={{ fontWeight: 600, color: '#6b7280' }}>{form.username?.charAt(0)?.toUpperCase() || 'U'}</span>
-          )}
-        </div>
-        <div style={{ flex: 1 }}>
-          <FieldLabel>Profile Image</FieldLabel>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input ref={this.fileRef} type="file" accept="image/*" onChange={this.onImageSelected} style={{ display: 'none' }} />
-            <button type="button" onClick={this.onPickImageClick} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: '#111827', color: 'white' }}>Change</button>
-            <button type="button" onClick={this.removeImage} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Remove</button>
-          </div>
-        </div>
-      </section>
-
-      {/* Personal info */}
-  <section style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Personal</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-          <div>
-            <FieldLabel>Username</FieldLabel>
-  <input value={form.username} readOnly aria-readonly
-         placeholder="e.g., adithya"
-         style={{ width: '100%', padding: 8, border: '1px solid #e5e7eb', borderRadius: 6, background: '#f9fafb', color: '#6b7280' }} />
-          </div>
-          <div>
-            <FieldLabel>Email</FieldLabel>
-  <input type="email" value={form.email} readOnly aria-readonly
-         placeholder="you@example.com"
-         style={{ width: '100%', padding: 8, border: '1px solid #e5e7eb', borderRadius: 6, background: '#f9fafb', color: '#6b7280' }} />
-          </div>
-          <div>
-            <FieldLabel>Phone</FieldLabel>
-  <div>
-    <input value={form.phone || ''}
-           onChange={(e) => {
-             // sanitize to allow digits, +, spaces, dashes but validate digits count
-             const raw = e.target.value;
-             this.update('phone', raw);
-           }}
-           placeholder="10 digit phone"
-           style={{ width: '100%', padding: 8, border: '1px solid ' + (errors.phone ? '#dc2626' : '#e5e7eb'), borderRadius: 6 }} />
-    {errors.phone && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 4 }}>{errors.phone}</div>}
+interface LinkPreview { original: string; contentType: string; objectUrl?: string; error?: string; filename?: string; }
+export interface UserProfileFormData { name: string; email: string; phone: string; bio?: string; skills: { name: string; level?: string; years?: number }[]; qualifications: { title: string; institution: string; year: number }[]; experience: { company: string; role: string; duration: string; description?: string }[]; links: string[]; tasksPosted: string[]; tasksCompleted: string[]; profileImage?: string; }
+const empty: UserProfileFormData = { name: '', email: '', phone: '', bio: undefined, skills: [], qualifications: [], experience: [], links: [], tasksPosted: [], tasksCompleted: [], profileImage: undefined };
+// Generic card section wrapper for read-only profile view
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: 20, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
+    <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 600, color: '#0f172a' }}>{title}</h3>
+    {children}
   </div>
-          </div>
-        </div>
-      </section>
+);
 
-      {/* Backend User Model (mostly read-only; selected fields editable below) */}
-      <section style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Profile Details</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-          <div>
-            <FieldLabel>Credit</FieldLabel>
-            <input value={form.credit ?? ''} readOnly aria-readonly style={{ width: '100%', padding: 8, border: '1px solid #e5e7eb', borderRadius: 6, background: '#f9fafb', color: '#6b7280' }} />
-          </div>
-          <div>
-            <FieldLabel>Ratings</FieldLabel>
-            <input value={form.reviews?.length ?? 0} readOnly aria-readonly style={{ width: '100%', padding: 8, border: '1px solid #e5e7eb', borderRadius: 6, background: '#f9fafb', color: '#6b7280' }} />
-          </div>
-        </div>
-        <div style={{ marginTop: 12 }}>
-          <FieldLabel>Bio</FieldLabel>
-          <textarea value={form.bio || ''} onChange={(e) => this.update('bio', e.target.value)} rows={3} style={{ width: '100%', padding: 8, border: '1px solid #d1d5db', borderRadius: 6 }} />
-        </div>
-        <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-          <div>
-            <FieldLabel>Links</FieldLabel>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input value={linkInput} onChange={(e) => this.setState({ linkInput: e.target.value })} placeholder="https://your-link.example" style={{ flex: 1, padding: 8, border: '1px solid #d1d5db', borderRadius: 6 }} />
-              <button type="button" onClick={this.addLink} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: '#111827', color: 'white' }}>Add</button>
-            </div>
-            {(!form.links || form.links.length === 0) ? (
-              <p style={{ color: '#6b7280' }}>No links</p>
-            ) : (
-              <ul style={{ listStyle: 'disc', paddingLeft: 20 }}>
-                {form.links.map((l, i) => (
-                  <li key={`l-${i}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                    <a href={l} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{l}</a>
-                    <button type="button" onClick={() => this.update('links', form.links!.filter((x) => x !== l))} style={{ border: '1px solid #d1d5db', background: 'white', borderRadius: 6, padding: '2px 8px' }}>Remove</button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div>
-            <FieldLabel>Experience</FieldLabel>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input value={expInput} onChange={(e) => this.setState({ expInput: e.target.value })} placeholder="Company - Role - Years" style={{ flex: 1, padding: 8, border: '1px solid #d1d5db', borderRadius: 6 }} />
-              <button type="button" onClick={this.addExperience} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: '#111827', color: 'white' }}>Add</button>
-            </div>
-            {(!form.experience || form.experience.length === 0) ? (
-              <p style={{ color: '#6b7280' }}>No experience</p>
-            ) : (
-              <ul style={{ listStyle: 'disc', paddingLeft: 20 }}>
-                {form.experience.map((e, i) => (
-                  <li key={`e-${i}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                    <span>{e}</span>
-                    <button type="button" onClick={() => this.update('experience', form.experience!.filter((_, idx) => idx !== i))} style={{ border: '1px solid #d1d5db', background: 'white', borderRadius: 6, padding: '2px 8px' }}>Remove</button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-        <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-          <div>
-            <FieldLabel>Certifications (Upload files)</FieldLabel>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input ref={this.certFileRef} type="file" multiple onChange={this.onCertFilesSelected} accept="application/pdf,image/*,.doc,.docx" style={{ display: 'none' }} />
-              <button type="button" onClick={() => this.certFileRef.current?.click()} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: '#111827', color: 'white' }}>Choose Files</button>
-              <button type="button" onClick={this.clearCertFiles} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Clear</button>
-            </div>
-            {(form.certificationFiles && form.certificationFiles.length > 0) ? (
-              <ul style={{ listStyle: 'disc', paddingLeft: 20 }}>
-                {form.certificationFiles!.map((f, i) => (
-                  <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
-                    <a href={certPreviewUrls[i]} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>{f.name}</a>
-                    <button type="button" onClick={() => this.removeCertFile(i)} style={{ border: '1px solid #d1d5db', background: 'white', borderRadius: 6, padding: '2px 8px' }}>Remove</button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{ color: '#6b7280' }}>No certification files selected</p>
-            )}
-            {form.certifications && form.certifications.length > 0 ? (
-              <div style={{ marginTop: 8 }}>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Existing (read-only):</div>
-                {form.certifications.map((c) => {
-                  const isUrl = /^(https?:\/\/|data:)/i.test(c);
-                  return <Chip key={c} text={c} href={isUrl ? c : undefined} />;
-                })}
+class UserProfileFormClass extends React.Component<Record<string, never>, { d: UserProfileFormData; loading: boolean; error?: string; linkPreviews: LinkPreview[]; editing: boolean }> {
+  state = { d: empty, loading: true, error: undefined as string | undefined, linkPreviews: [], editing: false };
+  private revoked: string[] = [];
+  componentDidMount() { this.load(); }
+  componentWillUnmount() { this.revoked.forEach(u => URL.revokeObjectURL(u)); }
+  async load() {
+    try {
+      if (!apiClient.isAuthenticated?.()) throw new Error('Not authenticated');
+      const verify = await apiClient.verifyToken();
+      const verifyRaw: BackendUserRaw | undefined = (verify?.user as BackendUserRaw) ?? (verify as BackendUserRaw);
+      if (!verifyRaw) throw new Error('No user in session');
+
+      // Secondary fetch to get full profile (bio, skills, etc.) since verify endpoint returns limited fields
+      let fullRaw: BackendUserRaw = verifyRaw;
+      if (verifyRaw.email) {
+        try {
+          const byEmail = await apiClient.getUserByEmail(verifyRaw.email);
+          if (byEmail && typeof byEmail === 'object') {
+            fullRaw = byEmail as BackendUserRaw;
+          }
+        } catch {
+          // Non-fatal: fallback to verifyRaw
+          console.warn('[Profile] Secondary fetch failed, using verify payload');
+        }
+      }
+
+      const mapSkills = (val: BackendUserRaw['skills']) => (val ?? [])
+        .filter(Boolean)
+        .map(s => {
+          if (typeof s === 'string') return { name: s };
+          if (s && typeof s === 'object') {
+            const obj = s as { name?: string; level?: string; years?: number };
+            return { name: obj.name || '', level: obj.level, years: typeof obj.years === 'number' ? obj.years : undefined };
+          }
+          return { name: '' };
+        })
+        .filter(s => s.name);
+
+      const mapQualifications = (val: BackendUserRaw['qualifications']) => (val ?? [])
+        .filter(Boolean)
+        .map(q => {
+          if (q && typeof q === 'object') {
+            const obj = q as { title?: string; institution?: string; year?: number };
+            return { title: obj.title || '', institution: obj.institution || '', year: typeof obj.year === 'number' ? obj.year : new Date().getFullYear() };
+          }
+          return { title: '', institution: '', year: new Date().getFullYear() };
+        })
+        .filter(q => q.title && q.institution);
+
+      const mapExperience = (val: BackendUserRaw['experience']) => (val ?? [])
+        .filter(Boolean)
+        .map(ex => {
+          if (ex && typeof ex === 'object') {
+            const obj = ex as { company?: string; role?: string; duration?: string; description?: string };
+            return { company: obj.company || '', role: obj.role || '', duration: obj.duration || '', description: typeof obj.description === 'string' ? obj.description : undefined };
+          }
+          return { company: '', role: '', duration: '' };
+        })
+        .filter(ex => ex.company && ex.role && ex.duration);
+
+      const d: UserProfileFormData = {
+        ...empty,
+        name: fullRaw.name || verifyRaw.name || '',
+        email: fullRaw.email || verifyRaw.email || '',
+        phone: fullRaw.phone || verifyRaw.phone || '',
+        bio: fullRaw.bio || undefined,
+        skills: mapSkills(fullRaw.skills),
+        qualifications: mapQualifications(fullRaw.qualifications),
+        experience: mapExperience(fullRaw.experience),
+        links: (fullRaw.links ?? []).filter((l): l is string => typeof l === 'string' && !!l.trim()),
+        tasksPosted: (fullRaw.tasksPosted ?? []).map(t => toId(t)).filter((t): t is string => !!t),
+        tasksCompleted: (fullRaw.tasksCompleted ?? []).map(t => toId(t)).filter((t): t is string => !!t),
+        profileImage: toId(fullRaw.profileImage) || undefined,
+      };
+      this.setState({ d }, () => this.fetchLinkPreviews());
+    } catch (e: unknown) {
+      const message = (e && typeof e === 'object' && 'message' in e) ? String((e as { message?: unknown }).message) : 'Failed to load user';
+      this.setState({ error: message });
+    } finally { this.setState({ loading: false }); }
+  }
+  async fetchLinkPreviews() {
+    const { d } = this.state;
+    const previews: LinkPreview[] = await Promise.all(d.links.map(async (link) => {
+      try {
+        const resp = await fetch(link, { method: 'GET' });
+        const contentType = resp.headers.get('Content-Type') || 'application/octet-stream';
+        if (!resp.ok) return { original: link, contentType, error: resp.status + ' ' + resp.statusText };
+        // Only create object URLs for images/pdf
+        if (/image\//i.test(contentType) || /pdf/i.test(contentType)) {
+          const blob = await resp.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            this.revoked.push(objectUrl);
+            // try derive filename
+            const disposition = resp.headers.get('Content-Disposition') || '';
+            const match = disposition.match(/filename="?([^";]+)"?/i);
+            return { original: link, contentType, objectUrl, filename: match ? match[1] : undefined };
+        }
+        return { original: link, contentType };
+      } catch (err: unknown) {
+        const msg = (err && typeof err === 'object' && 'message' in err) ? String((err as { message?: unknown }).message) : 'fetch failed';
+        return { original: link, contentType: 'unknown', error: msg };
+      }
+    }));
+    this.setState({ linkPreviews: previews });
+  }
+  handleUpdated = (updated: UserProfileFormData) => {
+    this.setState({ d: updated, editing: false }, () => this.fetchLinkPreviews());
+  };
+  render() {
+    const { d, loading, error, linkPreviews, editing } = this.state;
+    if (loading) return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}><div style={{ background: 'white', padding: 28, borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', fontSize: 14 }}>Loading profile...</div></div>;
+    if (error) return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fef2f2' }}><div style={{ background: 'white', padding: 28, border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 12, maxWidth: 480 }}>Error: {error}</div></div>;
+    if (editing) {
+      return (
+        <div style={{ minHeight: '100vh', background: '#f3f5f8', padding: '40px 32px' }}>
+          <div style={{ maxWidth: 1180, margin: '0 auto', display: 'grid', gridTemplateColumns: '280px 1fr', gap: 32 }}>
+            {/* Left panel placeholder (could be used for future navigation but kept empty per instructions) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
+                <h2 style={{ fontSize: 18, margin: 0, fontWeight: 600, color: '#0f172a' }}>Edit Profile</h2>
+                <p style={{ fontSize: 12, color: '#64748b', margin: '8px 0 0' }}>Update your personal information.</p>
+                <button onClick={() => this.setState({ editing: false })} style={{ marginTop: 20, background: '#eef2ff', border: '1px solid #c7d2fe', color: '#1d4ed8', padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', width: '100%' }}>Cancel</button>
               </div>
-            ) : null}
-          </div>
-          <div>
-            <FieldLabel>Resume (Upload file)</FieldLabel>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <input ref={this.resumeFileRef} type="file" onChange={this.onResumeFileSelected} accept="application/pdf,image/*,.doc,.docx" style={{ display: 'none' }} />
-              <button type="button" onClick={() => this.resumeFileRef.current?.click()} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: '#111827', color: 'white' }}>Choose File</button>
-              <button type="button" onClick={this.removeResumeFile} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: 'white' }}>Clear</button>
             </div>
-            <div style={{ marginTop: 8 }}>
-              {form.resumeFile ? (
-                <Chip text={form.resumeFile.name} onRemove={this.removeResumeFile} href={resumePreviewUrl} />
+            <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 20, padding: 32, boxShadow: '0 4px 8px rgba(0,0,0,0.04)' }}>
+              <UpdateUserProfileForm initial={d} onUpdated={this.handleUpdated} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div style={{ minHeight: '100vh', background: '#f1f5f9', padding: 32 }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gap: 24, gridTemplateColumns: '280px 1fr' }}>
+          {/* Sidebar / Profile Card */}
+          <div style={{ background: 'white', padding: 24, borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', height: 'fit-content' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <div style={{ width: 120, height: 120, borderRadius: '50%', background: '#e2e8f0', overflow: 'hidden', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 600, color: '#475569' }}>
+                {d.profileImage ? <img src={d.profileImage} alt={d.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (d.name?.charAt(0)?.toUpperCase() || 'U')}
+              </div>
+              <h1 style={{ fontSize: 22, margin: '0 0 4px', fontWeight: 700, color: '#0f172a' }}>{d.name || 'Unnamed User'}</h1>
+              <div style={{ fontSize: 13, color: '#475569', marginBottom: 8 }}>{d.email}</div>
+              <div style={{ fontSize: 12, color: '#64748b' }}>{d.phone || 'No phone provided'}</div>
+              <button onClick={() => this.setState({ editing: true })} style={{ marginTop: 16, background: '#2563eb', color: 'white', padding: '8px 16px', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Edit Profile</button>
+            </div>
+          </div>
+
+          {/* Main Content Sections */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <Section title="Bio">
+              {d.bio ? (
+                <p style={{ fontSize: 13, lineHeight: 1.5, color: '#334155', margin: 0, whiteSpace: 'pre-line' }}>{d.bio}</p>
               ) : (
-                <span style={{ color: '#6b7280' }}>No resume selected</span>
+                <div style={{ fontSize:12, color:'#94a3b8' }}>No bio</div>
               )}
-            </div>
-            {form.resume ? (
-              <div style={{ marginTop: 8 }}>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Existing (read-only):</div>
-                <Chip text={form.resume} href={/^(https?:\/\/|data:)/i.test(form.resume) ? form.resume : undefined} />
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </section>
-
-      {/* Skills */}
-      <section style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Skills</h3>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-          <input value={skillInput} onChange={(e) => this.setState({ skillInput: e.target.value })} placeholder="Add a skill and press Add" style={{ flex: 1, padding: 8, border: '1px solid #d1d5db', borderRadius: 6 }} />
-          <button type="button" onClick={this.addSkill} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: '#111827', color: 'white' }}>
-            Add
-          </button>
-        </div>
-        <div>
-          {form.skills.length === 0 ? (
-            <p style={{ color: '#6b7280' }}>No skills yet</p>
-          ) : (
-            form.skills.map((s) => <Chip key={s} text={s} onRemove={() => this.update('skills', form.skills.filter((x) => x !== s))} />)
-          )}
-        </div>
-      </section>
-
-      {/* Portfolio */}
-      <section style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Portfolio</h3>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-          <input value={portfolioUrl} onChange={(e) => this.setState({ portfolioUrl: e.target.value })} placeholder="https://your-work.example" style={{ flex: '2 1 380px', padding: 8, border: '1px solid #d1d5db', borderRadius: 6 }} />
-          <input value={portfolioTitle} onChange={(e) => this.setState({ portfolioTitle: e.target.value })} placeholder="Title (optional)" style={{ flex: '1 1 220px', padding: 8, border: '1px solid #d1d5db', borderRadius: 6 }} />
-          <button type="button" onClick={this.addPortfolio} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db', background: '#111827', color: 'white' }}>
-            Add
-          </button>
-        </div>
-        {form.portfolio.length === 0 ? (
-          <p style={{ color: '#6b7280' }}>No portfolio links yet</p>
-        ) : (
-          <ul style={{ listStyle: 'disc', paddingLeft: 20 }}>
-            {form.portfolio.map((p, i) => (
-              <li key={`${p.url}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <div>
-                  <a href={p.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>
-                    {p.title || p.url}
-                  </a>
-                  {p.title ? <span style={{ color: '#6b7280' }}> — {p.url}</span> : null}
+            </Section>
+            <Section title="Skills">
+              {d.skills.length === 0 ? <div style={{ fontSize:12, color:'#94a3b8' }}>No skills</div> : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {d.skills.map((s,i) => <span key={i} style={{ background:'#eef2ff', color:'#3730a3', padding:'6px 10px', borderRadius: 20, fontSize:12 }}>{s.name}{s.level ? ` (${s.level})` : ''}{s.years !== undefined ? ` - ${s.years}y` : ''}</span>)}
                 </div>
-                <button type="button" onClick={() => this.update('portfolio', form.portfolio.filter((_, idx) => idx !== i))} style={{ border: '1px solid #d1d5db', background: 'white', borderRadius: 6, padding: '4px 8px' }}>
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* Linked references (read-only, scrollable lists) */}
-      <section style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 16, marginBottom: 16 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Linked References</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
-          <div>
-            <FieldLabel>Tasks</FieldLabel>
-            <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid #e5e7eb', borderRadius: 6, padding: 8 }}>
-              {form.linkedTaskIds.length === 0 ? (
-                <p style={{ color: '#6b7280', margin: 0 }}>No tasks linked</p>
-              ) : (
-                <ul style={{ listStyle: 'disc', paddingLeft: 20, margin: 0 }}>
-                  {form.linkedTaskIds.map((id) => (
-                    <li key={id} style={{ marginBottom: 6 }}>{id}</li>
-                  ))}
-                </ul>
               )}
-            </div>
-          </div>
-          <div>
-            <FieldLabel>Reviews</FieldLabel>
-            <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid #e5e7eb', borderRadius: 6, padding: 8 }}>
-              {form.linkedReviewIds.length === 0 ? (
-                <p style={{ color: '#6b7280', margin: 0 }}>No reviews linked</p>
-              ) : (
-                <ul style={{ listStyle: 'disc', paddingLeft: 20, margin: 0 }}>
-                  {form.linkedReviewIds.map((id) => (
-                    <li key={id} style={{ marginBottom: 6 }}>{id}</li>
+            </Section>
+            <Section title="Qualifications">
+              {d.qualifications.length === 0 ? <div style={{ fontSize:12, color:'#94a3b8' }}>No qualifications</div> : (
+                <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                  {d.qualifications.map((q, i) => (
+                    <div key={i} style={{ fontSize: 13, lineHeight: 1.4 }}>
+                      <div style={{ fontWeight:600, color:'#1e293b' }}>{q.title}</div>
+                      <div style={{ color:'#475569' }}>{q.institution} ({q.year})</div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
-            </div>
+            </Section>
+            <Section title="Experience">
+              {d.experience.length === 0 ? <div style={{ fontSize:12, color:'#94a3b8' }}>No experience</div> : (
+                <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                  {d.experience.map((ex, i) => (
+                    <div key={i} style={{ fontSize: 13, lineHeight: 1.5 }}>
+                      <div><strong style={{ color:'#1e293b' }}>{ex.company}</strong> – {ex.role} <span style={{ color:'#64748b' }}>({ex.duration})</span></div>
+                      {ex.description && <div style={{ marginTop:4, color:'#475569' }}>{ex.description}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Section>
+            <Section title="Links">
+              {d.links.length === 0 ? <div style={{ fontSize:12, color:'#94a3b8' }}>No links</div> : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 12 }}>
+                  {linkPreviews.map((p: LinkPreview, i) => {
+                    if (p.error) return <div key={i} style={{ border:'1px solid #fecaca', background:'#fef2f2', padding:8, borderRadius:8 }}><div style={{ fontSize:11, color:'#b91c1c' }}>{p.original}</div><div style={{ fontSize:11, color:'#dc2626' }}>{p.error}</div></div>;
+                    if (p.objectUrl && /image\//i.test(p.contentType)) return <div key={i} style={{ border:'1px solid #e2e8f0', borderRadius:8, overflow:'hidden', background:'#fff' }}><a href={p.original} target="_blank" rel="noreferrer" style={{ textDecoration:'none', color:'#0f172a' }}><img src={p.objectUrl} alt={p.filename || 'link image'} style={{ width:'100%', height:120, objectFit:'cover', display:'block' }} /><div style={{ padding:'6px 8px', fontSize:11, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{p.filename || p.original}</div></a></div>;
+                    if (p.objectUrl && /pdf/i.test(p.contentType)) return <div key={i} style={{ border:'1px solid #e2e8f0', borderRadius:8, background:'#fff', padding:8, display:'flex', flexDirection:'column', gap:6 }}><span style={{ fontSize:12, fontWeight:600 }}>PDF</span><a href={p.objectUrl} target="_blank" rel="noreferrer" style={{ fontSize:11, color:'#2563eb', wordBreak:'break-all' }}>{p.filename || 'Open Document'}</a><a href={p.original} target="_blank" rel="noreferrer" style={{ fontSize:10, color:'#64748b' }}>Source</a></div>;
+                    return <div key={i} style={{ border:'1px solid #e2e8f0', borderRadius:8, background:'#fff', padding:8, fontSize:11, wordBreak:'break-all' }}><a href={p.original} target="_blank" rel="noreferrer" style={{ color:'#2563eb', textDecoration:'none' }}>{p.original}</a><div style={{ color:'#64748b', marginTop:4 }}>{p.contentType}</div></div>;
+                  })}
+                </div>
+              )}
+            </Section>
+            <Section title="Tasks">
+              <div style={{ display:'flex', flexDirection:'column', gap:12, fontSize:13 }}>
+                <div><strong>Tasks Posted:</strong> {d.tasksPosted.length ? d.tasksPosted.join(', ') : <span style={{ color:'#94a3b8' }}>None</span>}</div>
+                <div><strong>Tasks Completed:</strong> {d.tasksCompleted.length ? d.tasksCompleted.join(', ') : <span style={{ color:'#94a3b8' }}>None</span>}</div>
+              </div>
+            </Section>
           </div>
         </div>
-      </section>
-
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-    <button type="button" onClick={onDeactivate} style={{ padding: '10px 14px', borderRadius: 6, border: '1px solid #ef4444', background: '#fff', color: '#ef4444' }}>Deactivate</button>
-  <button type="submit" disabled={!!errors.phone || !dirty} style={{ padding: '10px 14px', borderRadius: 6, border: '1px solid #d1d5db', background: (!!errors.phone || !dirty) ? '#6b7280' : '#111827', color: 'white', cursor: (!!errors.phone || !dirty) ? 'not-allowed' : 'pointer' }}>Save Profile</button>
       </div>
-    </form>
     );
   }
 }
