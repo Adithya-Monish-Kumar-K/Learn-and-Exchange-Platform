@@ -10,6 +10,9 @@ import Layout from './pages/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import SetPassword from './pages/SetPassword';
 import { ThemeProvider } from './contexts/ThemeContext';
+import About from './pages/About';
+import FeaturesPage from './pages/Features';
+import ContactPage from './pages/Contact';
 
 function App() {
   return (
@@ -17,6 +20,9 @@ function App() {
       <ThemeProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
