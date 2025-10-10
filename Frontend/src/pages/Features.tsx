@@ -151,10 +151,12 @@ const FeaturesPage: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="min-h-[calc(100vh-4rem)] py-20 lg:py-28 relative overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0 bg-center bg-no-repeat bg-cover" style={{ backgroundImage: "url('/assets/features.jpg')" }}/>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h1 className="text-4xl lg:text-6xl font-light text-gray-900 leading-tight mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
               Powerful <span className="text-blue-600">Features</span>
               <br />
               Built for Success
