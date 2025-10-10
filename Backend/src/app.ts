@@ -16,7 +16,7 @@ const port = process.env.PORT || 3002;
 
 app.use(
   cors({
-    origin: process.env.STATIC_URL || 'http://localhost:5173',
+    origin: 'http://localhost:5173',
     credentials: true,
   })
 );

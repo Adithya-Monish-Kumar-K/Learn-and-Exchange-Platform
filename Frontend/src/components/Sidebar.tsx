@@ -7,7 +7,6 @@ import {
   Home,
   Users,
   BarChart3,
-  Bell,
   LogOut,
   Sun,
   Moon,
@@ -70,7 +69,7 @@ export default function ModernSidebar() {
     },
     {
       id: 'notifications',
-      path: '/profile',
+      path: '/user/profile',
       label: 'Profile',
       icon: User,
       badge: 2,

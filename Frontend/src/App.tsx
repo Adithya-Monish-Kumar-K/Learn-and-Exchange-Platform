@@ -5,10 +5,9 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import Dashboard from './components/dashboard';
+import Dashboard from './components/Dashboard';
 import Layout from './pages/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
 import SetPassword from './pages/SetPassword';
 import { ThemeProvider } from './contexts/ThemeContext';
 
