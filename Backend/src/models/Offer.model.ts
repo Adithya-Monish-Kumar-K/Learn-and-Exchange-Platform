@@ -59,5 +59,5 @@ const OfferSchema: Schema<IOfferDocument> = new Schema(
 OfferSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0, partialFilterExpression: { expiresAt: { $exists: true } } });
 
 const Offer: IOfferModel = mongoose.model<IOfferDocument, IOfferModel>("Offer", OfferSchema);
-
+const samp = 1;
 export default Offer;
