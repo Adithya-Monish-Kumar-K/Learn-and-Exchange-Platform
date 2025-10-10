@@ -1,4 +1,4 @@
-import { Schema, model, Types, Document } from 'mongoose';
+import mongoose, { Schema, model, Types, Document } from 'mongoose';
 
 export interface IMessage {
   senderId: Types.ObjectId;
@@ -42,6 +42,6 @@ const chatSchema = new Schema<IChat>(
   { timestamps: true }
 );
 
-const Message = model<IChat>('Chat', chatSchema);
+const Message = (mongoose.models.Chat as any) || model<IChat>('Chat', chatSchema);
 
 export default Message;

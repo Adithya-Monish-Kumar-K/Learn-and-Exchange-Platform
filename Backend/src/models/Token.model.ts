@@ -17,4 +17,4 @@ const TokenSchema = new Schema<IToken>(
 
 TokenSchema.index({ createdAt: 1 }, { expireAfterSeconds: 300 });
 
-export default mongoose.model<IToken>('Token', TokenSchema);
+export default mongoose.models.Token || mongoose.model<IToken>('Token', TokenSchema);

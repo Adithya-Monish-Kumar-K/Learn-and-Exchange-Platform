@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { connectToDb, getDb } from "./config/db";
 import authRoutes from "./routes/auth.routes";
 import chatRoutes from "./routes/chat.routes";
+import reviewSupportRoutes from "./routes/reviewSupport.routes";
 import { app, server } from "./config/socket";
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api', reviewSupportRoutes);
 
 app.get('/', (req, res) => {
     const db = getDb();
