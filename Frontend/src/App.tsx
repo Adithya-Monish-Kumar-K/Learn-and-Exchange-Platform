@@ -5,15 +5,17 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './components/dashboard';
+import Layout from './pages/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import SetPassword from './pages/SetPassword';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   return (
     <Router>
-      <>
+      <ThemeProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -22,36 +24,37 @@ function App() {
           <Route path="/set-password" element={<SetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route
-            path="/dashboard"
+            path="/user"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Layout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/profile"
-            element={<UserProfileFormClass />}
-          <Route
-            path="/user/chat"
-            element={
-              <ProtectedRoute>
-                <div className="min-h-screen bg-gray-50">
-                  <Navbar isAuthenticated />
-                  <div className="max-w-4xl mx-auto px-6 py-12">
-                    <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-                      Chat (Coming Soon)
-                    </h1>
-                    <p className="text-gray-600 text-sm">
-                      Realtime messaging module under construction.
-                    </p>
-                  </div>
+          >
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="profile" element={<UserProfileFormClass />} />
+            <Route
+              path="chat"
+              element={
+                <div className="max-w-4xl mx-auto px-6 py-12">
+                  <h1
+                    className="text-2xl font-semibold"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    Chat (Coming Soon)
+                  </h1>
+                  <p
+                    style={{ color: 'var(--text-secondary)' }}
+                    className="text-sm"
+                  >
+                    Realtime messaging module under construction.
+                  </p>
                 </div>
-              </ProtectedRoute>
-            }
-          />
+              }
+            />
+          </Route>
         </Routes>
-      </>
+      </ThemeProvider>
     </Router>
   );
 }
