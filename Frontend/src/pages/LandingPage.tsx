@@ -18,8 +18,8 @@ const SkillExchange: React.FC = () => {
             <nav className="hidden md:flex space-x-8">
               <a href="/" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Home</a>
               <a href="/about" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">About</a>
-              <a href="/" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Features</a>
-              <a href="/" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Contact</a>
+              <a href="/features" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Features</a>
+              <a href="/contact" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Contact</a>
             </nav>
             
             <div className="hidden md:flex gap-3">
