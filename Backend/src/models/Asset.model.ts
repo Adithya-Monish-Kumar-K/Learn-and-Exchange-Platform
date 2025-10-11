@@ -19,5 +19,5 @@ const assetSchema = new Schema<IAsset>(
   { timestamps: true }
 );
 
-const Asset = mongoose.model<IAsset>('Asset', assetSchema);
+const Asset = mongoose.models.Asset || mongoose.model<IAsset>('Asset', assetSchema);
 export default Asset;
