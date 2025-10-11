@@ -1,6 +1,6 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-*{
+* {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -11,8 +11,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(0, 0, 0, 0.87);
-  background-color: #e2e2e2;
+  color: var(--text-primary);
+  background-color: var(--background);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -20,12 +20,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-}
+/* Remove hardcoded media query since we're using CSS variables */
 
 .recipe-container {
   padding: 1.5rem;
@@ -33,7 +28,7 @@
   border-radius: 12px;
   margin: 0 auto;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  font-family: "Segoe UI", sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   color: #333;
   max-height: 75vh;
   overflow-y: auto;
@@ -97,4 +92,78 @@
   /* For directions: slightly different highlight */
   background: #f9e7d2;
   font-weight: 400;
+}
+
+@layer base {
+  :root {
+    /* Base colors */
+    --background: #ffffff;
+    --foreground: #213547;
+
+    /* Card and container colors */
+    --card-background: #ffffff;
+    --card-border: #e5e7eb;
+    --card-shadow: rgba(0, 0, 0, 0.1);
+
+    /* Text colors */
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+
+    /* Chart colors */
+    --chart-blue: #3b82f6;
+    --chart-green: #10b981;
+    --chart-orange: #f59e0b;
+    --chart-purple: #8b5cf6;
+    --chart-red: #ef4444;
+    --chart-grid: rgba(0, 0, 0, 0.1);
+
+    /* Status colors */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+
+    /* Sidebar colors */
+    --sidebar: #ffffff;
+    --sidebar-foreground: #111827;
+    --sidebar-border: #e5e7eb;
+    --sidebar-muted: #6b7280;
+  }
+
+  .dark {
+    /* Base colors */
+    --background: #111827;
+    --foreground: #f9fafb;
+
+    /* Card and container colors */
+    --card-background: #1f2937;
+    --card-border: #374151;
+    --card-shadow: rgba(0, 0, 0, 0.25);
+
+    /* Text colors */
+    --text-primary: #f9fafb;
+    --text-secondary: #e5e7eb;
+    --text-muted: #9ca3af;
+
+    /* Chart colors */
+    --chart-blue: #60a5fa;
+    --chart-green: #34d399;
+    --chart-orange: #fbbf24;
+    --chart-purple: #a78bfa;
+    --chart-red: #f87171;
+    --chart-grid: rgba(255, 255, 255, 0.1);
+
+    /* Status colors */
+    --success: #34d399;
+    --warning: #fbbf24;
+    --error: #f87171;
+    --info: #60a5fa;
+
+    /* Sidebar colors */
+    --sidebar: #1f2937;
+    --sidebar-foreground: #f9fafb;
+    --sidebar-border: #374151;
+    --sidebar-muted: #9ca3af;
+  }
 }
