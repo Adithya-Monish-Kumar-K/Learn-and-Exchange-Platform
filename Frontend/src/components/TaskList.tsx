@@ -29,8 +29,6 @@ const TaskList: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-800">Task Manager</h1>
         </div>
 
-        <button onClick={() => setEditingTask(true)}>View edit form</button>
-
         {!editingTask && <TaskForm onTaskCreated={loadTasks} />}
         {editingTask && (
           <div className="mb-6">
@@ -76,34 +74,6 @@ const TaskList: React.FC = () => {
                   className="px-3 py-1 rounded-md border text-sm"
                 >
                   Edit
-                </button>
-                <button
-                  onClick={() =>
-                    applyToTask(task._id, prompt('Enter User ID') || '')
-                  }
-                  className="px-3 py-1 rounded-md bg-yellow-100 text-yellow-700 text-sm"
-                >
-                  Apply
-                </button>
-                <button
-                  onClick={() =>
-                    assignTask(task._id, prompt('Assign to User ID') || '')
-                  }
-                  className="px-3 py-1 rounded-md bg-blue-100 text-blue-700 text-sm"
-                >
-                  Assign
-                </button>
-                <button
-                  onClick={() => completeTask(task._id)}
-                  className="px-3 py-1 rounded-md bg-green-100 text-green-700 text-sm"
-                >
-                  Complete
-                </button>
-                <button
-                  onClick={() => deleteTask(task._id)}
-                  className="px-3 py-1 rounded-md bg-red-100 text-red-700 text-sm"
-                >
-                  Delete
                 </button>
               </div>
             </li>

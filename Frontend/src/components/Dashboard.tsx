@@ -3,6 +3,8 @@ import { Users, CheckCircle, Gift, MessageSquare } from 'lucide-react';
 import apiClient from '../services/apiClient';
 import StatsCard from './StatsCard';
 import ChartCard from './ChartCard';
+import TaskStatsChart from './TaskStatsChart';
+import { getTaskStats } from '../services/taskService';
 
 interface Stat {
   color: string;
@@ -30,7 +32,7 @@ const colorMap = {
 
 const Dashboard: React.FC = () => {
   console.log('Dashboard component rendering');
-  const [user, setUser] = useState<any>(() => {
+  const [user] = useState<any>(() => {
     const currentUser = apiClient.getUser();
     console.log('Current user:', currentUser);
     return currentUser;
@@ -38,6 +40,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stat[]>([]);
   const [error, setError] = useState('');
+  const [taskStats, setTaskStats] = useState<any>(null);
   const [chartData, setChartData] = useState<{
     taskTrend?: any;
     userTrend?: any;
@@ -60,6 +63,8 @@ const Dashboard: React.FC = () => {
     const fetchData = async () => {
       console.log('Fetching dashboard data');
       try {
+        const taskStatsData = await getTaskStats();
+        setTaskStats(taskStatsData);
         setLoading(true);
 
         // Fetch stats first
@@ -220,21 +225,22 @@ const Dashboard: React.FC = () => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {taskStats && <TaskStatsChart stats={taskStats} />}
         <ChartCard
           title="Task Completion Trend"
           type="line"
           data={chartData.taskTrend}
           height={300}
         />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard
           title="User Registration Trend"
           type="bar"
           data={chartData.userTrend}
           height={300}
         />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard
           title="Review Rating Distribution"
           type="doughnut"

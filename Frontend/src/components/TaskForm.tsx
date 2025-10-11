@@ -69,21 +69,6 @@ const TaskForm: React.FC<{ onTaskCreated: () => void }> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Posted By (User ID)
-          </label>
-          <input
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
-            {...register('postedBy', { required: 'User ID required' })}
-          />
-          {errors.postedBy && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.postedBy.message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
             Deadline
           </label>
           <input

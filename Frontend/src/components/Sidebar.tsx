@@ -11,6 +11,7 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
+  CheckSquare,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import apiClient from '../services/apiClient';
@@ -45,6 +46,12 @@ export default function ModernSidebar() {
       label: 'Chat',
       icon: MessageCircle,
       badge: 3,
+    },
+    {
+      id: 'tasks',
+      path: '/tasks',
+      label: 'Tasks',
+      icon: CheckSquare,
     },
     {
       id: 'offers',

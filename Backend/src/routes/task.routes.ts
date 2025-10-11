@@ -1,20 +1,29 @@
-import express from "express";
-import { tokenValidator } from "../middlewares/auth/tokenValidation";
-import Task from "../models/Task.model";
+import { Router } from "express";
+import {
+  createTask,
+  getTasks,
+  getTaskById,
+  updateTask,
+  deleteTask,
+  applyToTask,
+  assignTask,
+  completeTask,
+  getTaskStats 
+} from "../controllers/Task.controllers";
 
-const router = express.Router();
 
-router.get('/', tokenValidator, async (req, res) => {
-  try {
-    const tasks = await Task
-      .find({}, { name: 1, _id: 1 })
-      .lean()
-      .exec();
-    res.status(200).json(tasks);
-  } catch (error) {
-    console.error('Error fetching tasks:', error);
-    res.status(500).json({ message: 'Error fetching tasks' });
-  }
-});
+
+const router = Router();
+
+router.post("/", createTask);
+router.get("/", getTasks);
+router.get("/:id", getTaskById);
+router.put("/:id", updateTask);
+router.delete("/:id", deleteTask);
+router.post("/:id/apply", applyToTask);
+router.post("/:id/assign", assignTask);
+router.post("/:id/complete", completeTask);
+router.get("/stats/summary", getTaskStats);
+
 
 export default router;
