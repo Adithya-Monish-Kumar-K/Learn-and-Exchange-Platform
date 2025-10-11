@@ -52,12 +52,12 @@ const Signup: React.FC = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
         <div className="absolute top-6 left-6">
-          <h1 className="text-xl font-bold text-gray-900">Skill Exchange</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Skill Exchange</h1>
         </div>
 
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div className="w-full max-w-md rounded-2xl shadow-xl p-8 text-center" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg
               className="w-8 h-8 text-green-600"
@@ -115,12 +115,12 @@ const Signup: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
       <div className="absolute top-6 left-6">
-        <h1 className="text-xl font-bold text-gray-900">Skill Exchange</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Skill Exchange</h1>
       </div>
 
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden flex">
+      <div className="w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden flex" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
         <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-gray-50 to-gray-100 items-center justify-center p-12">
           <motion.div
             initial={{ opacity: 0, x: 50 }}

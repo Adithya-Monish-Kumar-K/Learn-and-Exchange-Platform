@@ -39,8 +39,8 @@ export interface UserProfileFormData { name: string; email: string; phone: strin
 const empty: UserProfileFormData = { name: '', email: '', phone: '', bio: undefined, skills: [], qualifications: [], experience: [], links: [], tasksPosted: [], tasksCompleted: [], profileImage: undefined };
 // Generic card section wrapper for read-only profile view
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: 20, boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
-    <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 600, color: '#0f172a' }}>{title}</h3>
+  <div style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', borderRadius: 16, padding: 20, boxShadow: '0 1px 2px var(--card-shadow)' }}>
+    <h3 style={{ margin: '0 0 14px', fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{title}</h3>
     {children}
   </div>
 );
@@ -155,21 +155,21 @@ class UserProfileFormClass extends React.Component<Record<string, never>, { d: U
   };
   render() {
     const { d, loading, error, linkPreviews, editing } = this.state;
-    if (loading) return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}><div style={{ background: 'white', padding: 28, borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', fontSize: 14 }}>Loading profile...</div></div>;
-    if (error) return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fef2f2' }}><div style={{ background: 'white', padding: 28, border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 12, maxWidth: 480 }}>Error: {error}</div></div>;
+  if (loading) return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background)' }}><div style={{ background: 'var(--card-background)', padding: 28, borderRadius: 12, boxShadow: '0 1px 3px var(--card-shadow)', fontSize: 14, color: 'var(--text-primary)' }}>Loading profile...</div></div>;
+  if (error) return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background)' }}><div style={{ background: 'var(--card-background)', padding: 28, border: '1px solid var(--card-border)', color: '#b91c1c', borderRadius: 12, maxWidth: 480 }}>Error: {error}</div></div>;
     if (editing) {
       return (
-        <div style={{ minHeight: '100vh', background: '#f3f5f8', padding: '40px 32px' }}>
+  <div style={{ minHeight: '100vh', background: 'var(--background)', padding: '40px 32px' }}>
           <div style={{ maxWidth: 1180, margin: '0 auto', display: 'grid', gridTemplateColumns: '280px 1fr', gap: 32 }}>
             {/* Left panel placeholder (could be used for future navigation but kept empty per instructions) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 2px 4px rgba(0,0,0,0.04)' }}>
-                <h2 style={{ fontSize: 18, margin: 0, fontWeight: 600, color: '#0f172a' }}>Edit Profile</h2>
-                <p style={{ fontSize: 12, color: '#64748b', margin: '8px 0 0' }}>Update your personal information.</p>
+              <div style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', borderRadius: 16, padding: 24, boxShadow: '0 2px 4px var(--card-shadow)' }}>
+                <h2 style={{ fontSize: 18, margin: 0, fontWeight: 600, color: 'var(--text-primary)' }}>Edit Profile</h2>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '8px 0 0' }}>Update your personal information.</p>
                 <button onClick={() => this.setState({ editing: false })} style={{ marginTop: 20, background: '#eef2ff', border: '1px solid #c7d2fe', color: '#1d4ed8', padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', width: '100%' }}>Cancel</button>
               </div>
             </div>
-            <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 20, padding: 32, boxShadow: '0 4px 8px rgba(0,0,0,0.04)' }}>
+            <div style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', borderRadius: 20, padding: 32, boxShadow: '0 4px 8px var(--card-shadow)' }}>
               <UpdateUserProfileForm initial={d} onUpdated={this.handleUpdated} />
             </div>
           </div>
@@ -177,17 +177,17 @@ class UserProfileFormClass extends React.Component<Record<string, never>, { d: U
       );
     }
     return (
-      <div style={{ minHeight: '100vh', background: '#f1f5f9', padding: 32 }}>
+      <div style={{ minHeight: '100vh', background: 'var(--background)', padding: 32 }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gap: 24, gridTemplateColumns: '280px 1fr' }}>
           {/* Sidebar / Profile Card */}
-          <div style={{ background: 'white', padding: 24, borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', height: 'fit-content' }}>
+          <div style={{ background: 'var(--card-background)', padding: 24, borderRadius: 16, boxShadow: '0 1px 3px var(--card-shadow)', height: 'fit-content', border: '1px solid var(--card-border)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
               <div style={{ width: 120, height: 120, borderRadius: '50%', background: '#e2e8f0', overflow: 'hidden', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, fontWeight: 600, color: '#475569' }}>
                 {d.profileImage ? <img src={d.profileImage} alt={d.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (d.name?.charAt(0)?.toUpperCase() || 'U')}
               </div>
-              <h1 style={{ fontSize: 22, margin: '0 0 4px', fontWeight: 700, color: '#0f172a' }}>{d.name || 'Unnamed User'}</h1>
-              <div style={{ fontSize: 13, color: '#475569', marginBottom: 8 }}>{d.email}</div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>{d.phone || 'No phone provided'}</div>
+              <h1 style={{ fontSize: 22, margin: '0 0 4px', fontWeight: 700, color: 'var(--text-primary)' }}>{d.name || 'Unnamed User'}</h1>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>{d.email}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{d.phone || 'No phone provided'}</div>
               <button onClick={() => this.setState({ editing: true })} style={{ marginTop: 16, background: '#2563eb', color: 'white', padding: '8px 16px', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Edit Profile</button>
             </div>
           </div>
@@ -196,58 +196,58 @@ class UserProfileFormClass extends React.Component<Record<string, never>, { d: U
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <Section title="Bio">
               {d.bio ? (
-                <p style={{ fontSize: 13, lineHeight: 1.5, color: '#334155', margin: 0, whiteSpace: 'pre-line' }}>{d.bio}</p>
+                <p style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--text-secondary)', margin: 0, whiteSpace: 'pre-line' }}>{d.bio}</p>
               ) : (
-                <div style={{ fontSize:12, color:'#94a3b8' }}>No bio</div>
+                <div style={{ fontSize:12, color:'var(--text-muted)' }}>No bio</div>
               )}
             </Section>
             <Section title="Skills">
-              {d.skills.length === 0 ? <div style={{ fontSize:12, color:'#94a3b8' }}>No skills</div> : (
+              {d.skills.length === 0 ? <div style={{ fontSize:12, color:'var(--text-muted)' }}>No skills</div> : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {d.skills.map((s,i) => <span key={i} style={{ background:'#eef2ff', color:'#3730a3', padding:'6px 10px', borderRadius: 20, fontSize:12 }}>{s.name}{s.level ? ` (${s.level})` : ''}{s.years !== undefined ? ` - ${s.years}y` : ''}</span>)}
                 </div>
               )}
             </Section>
             <Section title="Qualifications">
-              {d.qualifications.length === 0 ? <div style={{ fontSize:12, color:'#94a3b8' }}>No qualifications</div> : (
+              {d.qualifications.length === 0 ? <div style={{ fontSize:12, color:'var(--text-muted)' }}>No qualifications</div> : (
                 <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
                   {d.qualifications.map((q, i) => (
                     <div key={i} style={{ fontSize: 13, lineHeight: 1.4 }}>
-                      <div style={{ fontWeight:600, color:'#1e293b' }}>{q.title}</div>
-                      <div style={{ color:'#475569' }}>{q.institution} ({q.year})</div>
+                      <div style={{ fontWeight:600, color:'var(--text-primary)' }}>{q.title}</div>
+                      <div style={{ color:'var(--text-secondary)' }}>{q.institution} ({q.year})</div>
                     </div>
                   ))}
                 </div>
               )}
             </Section>
             <Section title="Experience">
-              {d.experience.length === 0 ? <div style={{ fontSize:12, color:'#94a3b8' }}>No experience</div> : (
+              {d.experience.length === 0 ? <div style={{ fontSize:12, color:'var(--text-muted)' }}>No experience</div> : (
                 <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
                   {d.experience.map((ex, i) => (
                     <div key={i} style={{ fontSize: 13, lineHeight: 1.5 }}>
-                      <div><strong style={{ color:'#1e293b' }}>{ex.company}</strong> – {ex.role} <span style={{ color:'#64748b' }}>({ex.duration})</span></div>
-                      {ex.description && <div style={{ marginTop:4, color:'#475569' }}>{ex.description}</div>}
+                      <div><strong style={{ color:'var(--text-primary)' }}>{ex.company}</strong> – {ex.role} <span style={{ color:'var(--text-muted)' }}>({ex.duration})</span></div>
+                      {ex.description && <div style={{ marginTop:4, color:'var(--text-secondary)' }}>{ex.description}</div>}
                     </div>
                   ))}
                 </div>
               )}
             </Section>
             <Section title="Links">
-              {d.links.length === 0 ? <div style={{ fontSize:12, color:'#94a3b8' }}>No links</div> : (
+              {d.links.length === 0 ? <div style={{ fontSize:12, color:'var(--text-muted)' }}>No links</div> : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 12 }}>
                   {linkPreviews.map((p: LinkPreview, i) => {
                     if (p.error) return <div key={i} style={{ border:'1px solid #fecaca', background:'#fef2f2', padding:8, borderRadius:8 }}><div style={{ fontSize:11, color:'#b91c1c' }}>{p.original}</div><div style={{ fontSize:11, color:'#dc2626' }}>{p.error}</div></div>;
-                    if (p.objectUrl && /image\//i.test(p.contentType)) return <div key={i} style={{ border:'1px solid #e2e8f0', borderRadius:8, overflow:'hidden', background:'#fff' }}><a href={p.original} target="_blank" rel="noreferrer" style={{ textDecoration:'none', color:'#0f172a' }}><img src={p.objectUrl} alt={p.filename || 'link image'} style={{ width:'100%', height:120, objectFit:'cover', display:'block' }} /><div style={{ padding:'6px 8px', fontSize:11, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{p.filename || p.original}</div></a></div>;
-                    if (p.objectUrl && /pdf/i.test(p.contentType)) return <div key={i} style={{ border:'1px solid #e2e8f0', borderRadius:8, background:'#fff', padding:8, display:'flex', flexDirection:'column', gap:6 }}><span style={{ fontSize:12, fontWeight:600 }}>PDF</span><a href={p.objectUrl} target="_blank" rel="noreferrer" style={{ fontSize:11, color:'#2563eb', wordBreak:'break-all' }}>{p.filename || 'Open Document'}</a><a href={p.original} target="_blank" rel="noreferrer" style={{ fontSize:10, color:'#64748b' }}>Source</a></div>;
-                    return <div key={i} style={{ border:'1px solid #e2e8f0', borderRadius:8, background:'#fff', padding:8, fontSize:11, wordBreak:'break-all' }}><a href={p.original} target="_blank" rel="noreferrer" style={{ color:'#2563eb', textDecoration:'none' }}>{p.original}</a><div style={{ color:'#64748b', marginTop:4 }}>{p.contentType}</div></div>;
+                    if (p.objectUrl && /image\//i.test(p.contentType)) return <div key={i} style={{ border:'1px solid var(--card-border)', borderRadius:8, overflow:'hidden', background:'var(--card-background)' }}><a href={p.original} target="_blank" rel="noreferrer" style={{ textDecoration:'none', color:'var(--text-primary)' }}><img src={p.objectUrl} alt={p.filename || 'link image'} style={{ width:'100%', height:120, objectFit:'cover', display:'block' }} /><div style={{ padding:'6px 8px', fontSize:11, whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden' }}>{p.filename || p.original}</div></a></div>;
+                    if (p.objectUrl && /pdf/i.test(p.contentType)) return <div key={i} style={{ border:'1px solid var(--card-border)', borderRadius:8, background:'var(--card-background)', padding:8, display:'flex', flexDirection:'column', gap:6 }}><span style={{ fontSize:12, fontWeight:600, color:'var(--text-primary)' }}>PDF</span><a href={p.objectUrl} target="_blank" rel="noreferrer" style={{ fontSize:11, color:'#2563eb', wordBreak:'break-all' }}>{p.filename || 'Open Document'}</a><a href={p.original} target="_blank" rel="noreferrer" style={{ fontSize:10, color:'var(--text-muted)' }}>Source</a></div>;
+                    return <div key={i} style={{ border:'1px solid var(--card-border)', borderRadius:8, background:'var(--card-background)', padding:8, fontSize:11, wordBreak:'break-all' }}><a href={p.original} target="_blank" rel="noreferrer" style={{ color:'#2563eb', textDecoration:'none' }}>{p.original}</a><div style={{ color:'var(--text-muted)', marginTop:4 }}>{p.contentType}</div></div>;
                   })}
                 </div>
               )}
             </Section>
             <Section title="Tasks">
-              <div style={{ display:'flex', flexDirection:'column', gap:12, fontSize:13 }}>
-                <div><strong>Tasks Posted:</strong> {d.tasksPosted.length ? d.tasksPosted.join(', ') : <span style={{ color:'#94a3b8' }}>None</span>}</div>
-                <div><strong>Tasks Completed:</strong> {d.tasksCompleted.length ? d.tasksCompleted.join(', ') : <span style={{ color:'#94a3b8' }}>None</span>}</div>
+              <div style={{ display:'flex', flexDirection:'column', gap:12, fontSize:13, color: 'var(--text-secondary)' }}>
+                <div><strong style={{ color: 'var(--text-primary)' }}>Tasks Posted:</strong> {d.tasksPosted.length ? d.tasksPosted.join(', ') : <span style={{ color:'var(--text-muted)' }}>None</span>}</div>
+                <div><strong style={{ color: 'var(--text-primary)' }}>Tasks Completed:</strong> {d.tasksCompleted.length ? d.tasksCompleted.join(', ') : <span style={{ color:'var(--text-muted)' }}>None</span>}</div>
               </div>
             </Section>
           </div>

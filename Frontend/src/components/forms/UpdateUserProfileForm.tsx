@@ -161,73 +161,73 @@ const UpdateUserProfileForm: React.FC<Props> = ({ onUpdated, initial }) => {
 
   return (
     <form onSubmit={handleSubmit} style={{ background: 'transparent', padding: 0, borderRadius: 0, boxShadow: 'none', maxWidth: '100%', margin: 0 }}>
-      <h2 style={{ marginTop: 0, fontSize: 20, fontWeight: 600, color: '#0f172a', marginBottom: 20 }}>Personal Information</h2>
+      <h2 style={{ marginTop: 0, fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>Personal Information</h2>
       <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))' }}>
         {(['name','phone'] as (keyof EditableUserFields)[]).map(key => (
-          <label key={key} style={{ display: 'flex', flexDirection: 'column', fontSize: 12, fontWeight: 600, color: '#465366', letterSpacing: '.3px' }}>
+          <label key={key} style={{ display: 'flex', flexDirection: 'column', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '.3px' }}>
             <span style={{ marginBottom: 6 }}>{fieldLabel[key as string]}</span>
-            <input value={String(form[key] || '')} onChange={updatePrimitive(key)} style={{ padding: '10px 12px', border: '1px solid #d0d7e2', background:'#fff', borderRadius: 10, fontSize: 13, outline: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }} />
+            <input value={String(form[key] || '')} onChange={updatePrimitive(key)} style={{ padding: '10px 12px', border: '1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 13, outline: 'none', boxShadow: '0 1px 2px var(--card-shadow)' }} />
           </label>
         ))}
       </div>
-      <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, fontWeight: 500, color: '#334155', marginTop: 16 }}>
+      <label style={{ display: 'flex', flexDirection: 'column', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginTop: 16 }}>
         Bio
-        <textarea value={form.bio || ''} onChange={updatePrimitive('bio')} rows={4} style={{ resize: 'vertical', marginTop: 6, padding: '10px 12px', border: '1px solid #d0d7e2', background:'#fff', borderRadius: 10, fontSize: 13, lineHeight: 1.5, outline: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }} />
+        <textarea value={form.bio || ''} onChange={updatePrimitive('bio')} rows={4} style={{ resize: 'vertical', marginTop: 6, padding: '10px 12px', border: '1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 13, lineHeight: 1.5, outline: 'none', boxShadow: '0 1px 2px var(--card-shadow)' }} />
       </label>
 
       {/* Links */}
       <section style={{ marginTop: 32 }}>
-        <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight:600, color:'#0f172a' }}>Links</h3>
+        <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight:600, color:'var(--text-primary)' }}>Links</h3>
         {(form.links || []).map((l, i) => (
           <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <input value={l} onChange={updateArrayItem('links', i, 'value')} placeholder="https://..." style={{ flex: 1, padding: '10px 12px', border: '1px solid #d0d7e2', background:'#fff', borderRadius: 10, fontSize: 12, outline:'none' }} />
-            <button type="button" onClick={removeArrayItem('links', i)} style={{ background: '#f1f5f9', border: '1px solid #d7e0ea', color: '#5f6b7a', padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor:'pointer' }}>Remove</button>
+            <input value={l} onChange={updateArrayItem('links', i, 'value')} placeholder="https://..." style={{ flex: 1, padding: '10px 12px', border: '1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12, outline:'none' }} />
+            <button type="button" onClick={removeArrayItem('links', i)} style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor:'pointer' }}>Remove</button>
           </div>
         ))}
-        <button type="button" onClick={addArrayItem('links')} style={{ background: '#e0edff', border: '1px solid #b7d3ff', color: '#1d4ed8', padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight:500, cursor:'pointer' }}>Add Link</button>
+        <button type="button" onClick={addArrayItem('links')} style={{ background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight:500, cursor:'pointer' }}>Add Link</button>
       </section>
 
       {/* Skills */}
       <section style={{ marginTop: 32 }}>
-        <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight:600, color:'#0f172a' }}>Skills</h3>
+        <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight:600, color:'var(--text-primary)' }}>Skills</h3>
         {(form.skills || []).map((s, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr)) 70px', gap: 10, marginBottom: 10 }}>
-            <input value={s.name} placeholder="Name" onChange={e => updateArrayItem('skills', i, 'name')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <input value={s.level || ''} placeholder="Level" onChange={e => updateArrayItem('skills', i, 'level')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <input value={s.years?.toString() || ''} placeholder="Years" onChange={e => updateArrayItem('skills', i, 'years')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <button type="button" onClick={removeArrayItem('skills', i)} style={{ background: '#f1f5f9', border: '1px solid #d7e0ea', color: '#5f6b7a', padding: '6px 10px', borderRadius: 10, fontSize: 11, cursor:'pointer' }}>X</button>
+            <input value={s.name} placeholder="Name" onChange={e => updateArrayItem('skills', i, 'name')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <input value={s.level || ''} placeholder="Level" onChange={e => updateArrayItem('skills', i, 'level')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <input value={s.years?.toString() || ''} placeholder="Years" onChange={e => updateArrayItem('skills', i, 'years')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <button type="button" onClick={removeArrayItem('skills', i)} style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', padding: '6px 10px', borderRadius: 10, fontSize: 11, cursor:'pointer' }}>X</button>
           </div>
         ))}
-        <button type="button" onClick={addArrayItem('skills')} style={{ background: '#e0edff', border: '1px solid #b7d3ff', color: '#1d4ed8', padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight:500, cursor:'pointer' }}>Add Skill</button>
+        <button type="button" onClick={addArrayItem('skills')} style={{ background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight:500, cursor:'pointer' }}>Add Skill</button>
       </section>
 
       {/* Qualifications */}
       <section style={{ marginTop: 32 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>Qualifications</h3>
+        <h3 style={{ margin: '0 0 8px', fontSize: 16, color:'var(--text-primary)', fontWeight:600 }}>Qualifications</h3>
         {(form.qualifications || []).map((q, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr)) 60px', gap: 10, marginBottom: 10 }}>
-            <input value={q.title} placeholder="Title" onChange={e => updateArrayItem('qualifications', i, 'title')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <input value={q.institution} placeholder="Institution" onChange={e => updateArrayItem('qualifications', i, 'institution')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <input value={q.year.toString()} placeholder="Year" onChange={e => updateArrayItem('qualifications', i, 'year')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <button type="button" onClick={removeArrayItem('qualifications', i)} style={{ background: '#f1f5f9', border: '1px solid #d7e0ea', color: '#5f6b7a', padding: '6px 10px', borderRadius: 10, fontSize: 11, cursor:'pointer' }}>X</button>
+            <input value={q.title} placeholder="Title" onChange={e => updateArrayItem('qualifications', i, 'title')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <input value={q.institution} placeholder="Institution" onChange={e => updateArrayItem('qualifications', i, 'institution')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <input value={q.year.toString()} placeholder="Year" onChange={e => updateArrayItem('qualifications', i, 'year')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <button type="button" onClick={removeArrayItem('qualifications', i)} style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', padding: '6px 10px', borderRadius: 10, fontSize: 11, cursor:'pointer' }}>X</button>
           </div>
         ))}
-        <button type="button" onClick={addArrayItem('qualifications')} style={{ background: '#e0edff', border: '1px solid #b7d3ff', color: '#1d4ed8', padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight:500, cursor:'pointer' }}>Add Qualification</button>
+        <button type="button" onClick={addArrayItem('qualifications')} style={{ background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight:500, cursor:'pointer' }}>Add Qualification</button>
       </section>
 
       {/* Experience */}
       <section style={{ marginTop: 32 }}>
-        <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>Experience</h3>
+        <h3 style={{ margin: '0 0 8px', fontSize: 16, color:'var(--text-primary)', fontWeight:600 }}>Experience</h3>
         {(form.experience || []).map((ex, i) => (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr)) 80px', gap: 10, marginBottom: 10 }}>
-            <input value={ex.company} placeholder="Company" onChange={e => updateArrayItem('experience', i, 'company')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <input value={ex.role} placeholder="Role" onChange={e => updateArrayItem('experience', i, 'role')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <input value={ex.duration} placeholder="Duration" onChange={e => updateArrayItem('experience', i, 'duration')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <input value={ex.description || ''} placeholder="Description" onChange={e => updateArrayItem('experience', i, 'description')(e)} style={{ padding: '8px 10px', border:'1px solid #d0d7e2', borderRadius: 10, fontSize: 12 }} />
-            <button type="button" onClick={removeArrayItem('experience', i)} style={{ background: '#f1f5f9', border: '1px solid #d7e0ea', color: '#5f6b7a', padding: '6px 10px', borderRadius: 10, fontSize: 11, cursor:'pointer' }}>X</button>
+            <input value={ex.company} placeholder="Company" onChange={e => updateArrayItem('experience', i, 'company')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <input value={ex.role} placeholder="Role" onChange={e => updateArrayItem('experience', i, 'role')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <input value={ex.duration} placeholder="Duration" onChange={e => updateArrayItem('experience', i, 'duration')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <input value={ex.description || ''} placeholder="Description" onChange={e => updateArrayItem('experience', i, 'description')(e)} style={{ padding: '8px 10px', border:'1px solid var(--card-border)', background:'var(--card-background)', color: 'var(--text-primary)', borderRadius: 10, fontSize: 12 }} />
+            <button type="button" onClick={removeArrayItem('experience', i)} style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', color: 'var(--text-secondary)', padding: '6px 10px', borderRadius: 10, fontSize: 11, cursor:'pointer' }}>X</button>
           </div>
         ))}
-        <button type="button" onClick={addArrayItem('experience')} style={{ background: '#e0edff', border: '1px solid #b7d3ff', color: '#1d4ed8', padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight:500, cursor:'pointer' }}>Add Experience</button>
+        <button type="button" onClick={addArrayItem('experience')} style={{ background: 'transparent', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight:500, cursor:'pointer' }}>Add Experience</button>
       </section>
 
       <div style={{ marginTop: 40, display: 'flex', gap: 16, alignItems: 'center' }}>
@@ -237,7 +237,7 @@ const UpdateUserProfileForm: React.FC<Props> = ({ onUpdated, initial }) => {
         {success && <span style={{ fontSize: 12, color: '#059669' }}>{success}</span>}
         {error && <span style={{ fontSize: 12, color: '#b91c1c' }}>{error}</span>}
       </div>
-      <p style={{ marginTop: 12, fontSize: 11, color: '#64748b' }}>Email, tasks posted/completed, and profile image are not editable here.</p>
+  <p style={{ marginTop: 12, fontSize: 11, color: 'var(--text-muted)' }}>Email, tasks posted/completed, and profile image are not editable here.</p>
     </form>
   );
 };

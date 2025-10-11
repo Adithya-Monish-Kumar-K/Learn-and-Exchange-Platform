@@ -103,10 +103,10 @@ const SetPassword: React.FC = () => {
 
   if (verifying) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Verifying link...</p>
+          <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>Verifying link...</p>
         </div>
       </div>
     );
@@ -114,12 +114,12 @@ const SetPassword: React.FC = () => {
 
   if (!tokenValid && !success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
         <div className="absolute top-6 left-6">
-          <h1 className="text-xl font-bold text-gray-900">Skill Exchange</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Skill Exchange</h1>
         </div>
 
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div className="w-full max-w-md rounded-2xl shadow-xl p-8 text-center" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <XCircle className="w-10 h-10 text-red-600" />
           </div>
@@ -150,12 +150,12 @@ const SetPassword: React.FC = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
         <div className="absolute top-6 left-6">
-          <h1 className="text-xl font-bold text-gray-900">Skill Exchange</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Skill Exchange</h1>
         </div>
 
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div className="w-full max-w-md rounded-2xl shadow-xl p-8 text-center" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
@@ -179,17 +179,17 @@ const SetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
       <div className="absolute top-6 left-6">
-        <h1 className="text-xl font-bold text-gray-900">Skill Exchange</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Skill Exchange</h1>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+      <div className="w-full max-w-md rounded-2xl shadow-xl p-8" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Set Your Password
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             {user ? (
               <>
                 Hi <span className="font-semibold">{user.name}</span>, finish

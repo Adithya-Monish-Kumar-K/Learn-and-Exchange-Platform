@@ -366,6 +366,8 @@ class APIClient {
 
   // 2. Verify register token (email link)
   async verifyRegisterToken(token: string) {
+    console.log(token);
+    
     return this.exec('Verify Register Token', async () => {
       const { data } = await this.client.get('/auth/verify-token-register', {
         headers: { Authorization: `Bearer ${token}` },

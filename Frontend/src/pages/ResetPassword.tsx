@@ -34,12 +34,12 @@ const ResetPassword: React.FC = () => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
       <div className="absolute top-6 left-6">
-        <h1 className="text-xl font-bold text-gray-900">Skill Exchange</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Skill Exchange</h1>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+      <div className="w-full max-w-md rounded-2xl shadow-xl p-8" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Reset Password</h2>
           <p className="text-sm text-gray-600">Enter your new password below</p>
@@ -59,7 +59,7 @@ const ResetPassword: React.FC = () => {
 
         <form onSubmit={submit} className="space-y-5">
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="password" className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
               New Password
             </label>
             <input
@@ -70,14 +70,15 @@ const ResetPassword: React.FC = () => {
               minLength={6}
               value={form.password}
               onChange={onChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
               placeholder="••••••••"
             />
-            <p className="mt-1.5 text-xs text-gray-500">Must be at least 6 characters</p>
+            <p className="mt-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>Must be at least 6 characters</p>
           </div>
 
           <div>
-            <label htmlFor="confirm" className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label htmlFor="confirm" className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
               Confirm Password
             </label>
             <input
@@ -88,7 +89,8 @@ const ResetPassword: React.FC = () => {
               minLength={6}
               value={form.confirm}
               onChange={onChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
               placeholder="••••••••"
             />
           </div>
@@ -102,7 +104,7 @@ const ResetPassword: React.FC = () => {
           </button>
 
           <div className="text-center">
-            <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">
+            <Link to="/login" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
               Back to Login
             </Link>
           </div>

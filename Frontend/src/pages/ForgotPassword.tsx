@@ -23,12 +23,12 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--background)' }}>
       <div className="absolute top-6 left-6">
-        <h1 className="text-xl font-bold text-gray-900">Skill Exchange</h1>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Skill Exchange</h1>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+      <div className="w-full max-w-md rounded-2xl shadow-xl p-8" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password</h2>
           <p className="text-sm text-gray-600">
@@ -73,7 +73,7 @@ const ForgotPassword: React.FC = () => {
         ) : (
           <form onSubmit={submit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
                 Email Address
               </label>
               <input
@@ -82,7 +82,8 @@ const ForgotPassword: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
                 placeholder="you@example.com"
               />
             </div>
@@ -96,7 +97,7 @@ const ForgotPassword: React.FC = () => {
             </button>
 
             <div className="text-center">
-              <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">
+              <Link to="/login" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                 Back to Login
               </Link>
             </div>
