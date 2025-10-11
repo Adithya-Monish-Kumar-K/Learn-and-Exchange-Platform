@@ -1,55 +1,75 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import UserProfileFormClass from './components/forms/UserProfileForm';
+import Chat from './components/Chat';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './components/Dashboard';
+import Layout from './pages/Layout';
+import TaskList from './components/TaskList';
 import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
 import SetPassword from './pages/SetPassword';
+import { ThemeProvider } from './contexts/ThemeContext';
+import apiClient from './services/apiClient';
+import About from './pages/About';
+import FeaturesPage from './pages/Features';
+import ContactPage from './pages/Contact';
+import Offers from './pages/offers';
+import CreateOfferForm from './components/offers/CreateOfferForm';
+import UpdateOfferForm from './components/offers/UpdateOfferForm';
 
 function App() {
   return (
     <Router>
-      <>
+      <ThemeProvider>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+
+          {/* Authentication Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/set-password" element={<SetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Protected Routes */}
           <Route
-            path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Layout />
               </ProtectedRoute>
             }
-          />
-          {/* Placeholder chat route */}
-          <Route
-            path="/user/chat"
-            element={
-              <ProtectedRoute>
-                <div className="min-h-screen bg-gray-50">
-                  <Navbar isAuthenticated />
-                  <div className="max-w-4xl mx-auto px-6 py-12">
-                    <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-                      Chat (Coming Soon)
-                    </h1>
-                    <p className="text-gray-600 text-sm">
-                      Realtime messaging module under construction.
-                    </p>
-                  </div>
+          >
+            {/* Dashboard Routes */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<UserProfileFormClass />} />
+
+            {/* Chat Routes */}
+            <Route
+              path="/chat"
+              element={
+                <div className="h-[calc(100vh-4rem)]">
+                  <Chat currentUser={apiClient.getUser()} />
                 </div>
-              </ProtectedRoute>
-            }
-          />
+              }
+            />
+
+            {/* Offers Routes */}
+            <Route path="/offers" element={<Offers />} />
+            <Route path="/offers/create" element={<CreateOfferForm />} />
+            <Route path="/offers/edit/:id" element={<UpdateOfferForm />} />
+
+            {/* Tasks Routes */}
+            <Route path="/tasks" element={<TaskList />} />
+          </Route>
         </Routes>
-      </>
+      </ThemeProvider>
     </Router>
   );
 }

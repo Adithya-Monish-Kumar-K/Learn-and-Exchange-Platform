@@ -69,8 +69,10 @@ export async function tokenValidator(
 
     // accept both userid and userId from token payload
     const userid = payload?.userid ?? payload?.userId;
-
-    if (
+    
+    // Don't mutate req.body (causes unrecognized_keys in downstream validation). Attach to request context instead.
+    interface AuthAugmentedRequest extends Request { auth?: any }
+    const areFieldsPresent = (
       payload &&
       payload.secret_key === secret_key &&
       userid &&
@@ -78,14 +80,24 @@ export async function tokenValidator(
       payload.name &&
       payload.role &&
       typeof payload.isActive !== 'undefined'
-    ) {
-      attachNormalizedUser(req, payload);
-      console.log('Token payload:', payload);
-      return next();
-    } else {
+    );
+
+    if (!areFieldsPresent) {
       console.log('Invalid token payload:', payload);
       return res.status(401).send({ MESSAGE: 'Invalid token payload.' });
     }
+
+    (req as AuthAugmentedRequest).auth = {
+      userid: payload.userid,
+      email: payload.email,
+      name: payload.name,
+      role: payload.role,
+      isActive: payload.isActive,
+    };
+    // For compatibility with existing code expecting userId from body, keep a lightweight field separate from body
+    (req as any).userId = payload.userid;
+    console.log('Token payload attached to req.auth');
+    return next();
   } catch (err: any) {
     return res
       .status(401)

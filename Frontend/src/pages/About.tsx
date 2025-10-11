@@ -1,57 +1,69 @@
 import React from 'react';
 import { Users, Target, Award, Briefcase, ArrowLeft, Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const About: React.FC = () => {
 	const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
 	return (
 		<div className="min-h-screen bg-white">
-			{/* Navbar copied from LandingPage */}
-			<header className="border-b border-gray-100">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="flex justify-between items-center h-16">
-						<div className="font-semibold text-xl text-gray-900">
-							SkillExchange
+			<header className="bg-white border-b border-gray-200">
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+					  <div className="flex justify-between items-center h-16">
+						<div className="font-bold text-2xl text-gray-900">
+						  SkillExchange
 						</div>
-
+						
 						<nav className="hidden md:flex space-x-8">
-							<a href="/" className="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
-							<a href="/about" className="text-gray-900 font-medium transition-colors">About</a>
-							<a href="/features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-							<a href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
+						  <a href="/" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Home</a>
+						  <a href="/about" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">About</a>
+						  <a href="/features" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Features</a>
+						  <a href="/contact" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Contact</a>
 						</nav>
-
-						<div className="hidden md:flex items-center gap-3">
-							<button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-								Get Started
+						
+						<div className="hidden md:flex gap-3">
+						  <Link to="/login">
+							<button className="text-gray-700 hover:text-gray-900 px-4 py-2 transition-colors font-medium">
+							  Log In
 							</button>
+						  </Link>
+						  <Link to="/signup">
+							<button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+							  Join Now
+							</button>
+						  </Link>
 						</div>
-
-						<button
-							className="md:hidden"
-							onClick={() => setIsMenuOpen(!isMenuOpen)}
-							aria-label="Toggle menu"
+						
+						<button 
+						  className="md:hidden text-gray-900"
+						  onClick={() => setIsMenuOpen(!isMenuOpen)}
 						>
-							{isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+						  {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
 						</button>
-					</div>
-
-					{isMenuOpen && (
-						<div className="md:hidden border-t border-gray-100 py-4">
-							<div className="flex flex-col space-y-4">
-								<a href="#" className="text-gray-600">Home</a>
-								<a href="#" className="text-gray-900 font-medium">About</a>
-								<a href="#features" className="text-gray-600">Features</a>
-								<a href="#contact" className="text-gray-600">Contact</a>
-								<a href="/" className="text-blue-600" onClick={() => setIsMenuOpen(false)}>Back to Home</a>
-								<button className="bg-blue-600 text-white px-4 py-2 rounded-md w-fit">
-									Get Started
-								</button>
-							</div>
+					  </div>
+					  
+					  {isMenuOpen && (
+						<div className="md:hidden border-t border-gray-200 py-4">
+						  <div className="flex flex-col space-y-4">
+							<a href="#" className="text-gray-700">Home</a>
+							<a href="#" className="text-gray-700">About</a>
+							<a href="#" className="text-gray-700">Features</a>
+							<a href="#" className="text-gray-700">Contact</a>
+							<Link to="/login">
+							<button className="text-gray-700 hover:text-gray-900 px-4 py-2 transition-colors font-medium">
+							  Log In
+							</button>
+						  </Link>
+							<Link to="/signup">
+							  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg w-fit">
+								Join Now
+							  </button>
+							</Link>
+						  </div>
 						</div>
-					)}
-				</div>
-			</header>
+					  )}
+					</div>
+				  </header>
 
 			{/* Page content */}
 			<main className="py-16 lg:py-20">

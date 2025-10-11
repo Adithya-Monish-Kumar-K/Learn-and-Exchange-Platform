@@ -3,6 +3,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosError,
 } from 'axios';
+import { removeItem } from 'framer-motion';
 
 interface StoredUser {
   _id: string;
@@ -34,18 +35,30 @@ class APIClient {
   private client: AxiosInstance;
   private accessToken: string | null;
   private user: StoredUser | null;
+  private isRefreshing = false;
+  private refreshQueue: {
+    resolve: (v?: any) => void;
+    reject: (e: any) => void;
+  }[] = [];
+  private refreshTimer: number | null = null;
 
   constructor() {
     this.accessToken = localStorage.getItem('accessToken');
     this.user = this.getStoredUser();
-
     this.client = axios.create({
       baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
       withCredentials: true,
       timeout: 15000,
     });
-
     this.setupInterceptors();
+    if (this.accessToken) {
+      this.scheduleProactiveRefresh(this.accessToken);
+    }
+  }
+
+  // Get axios client instance
+  getClient(): AxiosInstance {
+    return this.client;
   }
 
   // ---------- Interceptors & Logging ----------
@@ -65,8 +78,27 @@ class APIClient {
         this.logResponse(response.config, response.status, response.data);
         return response;
       },
-      (error: AxiosError) => {
+      async (error: AxiosError) => {
+        const original: any = error.config;
         const status = error.response?.status;
+
+        // Attempt silent refresh on 401 (once)
+        if (
+          status === 401 &&
+          !original._retry &&
+          !this.isUnprotectedPath(original?.url)
+        ) {
+          original._retry = true;
+          try {
+            const newToken = await this.refreshAccessToken();
+            original.headers = original.headers || {};
+            original.headers.Authorization = `Bearer ${newToken}`;
+            return this.client(original);
+          } catch (refreshErr) {
+            this.logout();
+          }
+        }
+
         if (status === 401 && !this.isUnprotectedPath(error.config?.url)) {
           this.logout();
         }
@@ -204,12 +236,42 @@ class APIClient {
 
   // ---------- Auth State ----------
   isAuthenticated() {
+    console.log('Checking authentication, token:', !!this.accessToken);
     return !!this.accessToken;
+  }
+
+  private decodeJwt(token: string): { exp?: number } {
+    try {
+      const payload = token.split('.')[1];
+      const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(json);
+    } catch {
+      return {};
+    }
+  }
+
+  private scheduleProactiveRefresh(token: string) {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+    const { exp } = this.decodeJwt(token);
+    if (!exp) return;
+    const expiresMs = exp * 1000;
+    const now = Date.now();
+    const lead = 60 * 1000; // refresh 60s before expiry
+    const delay = Math.max(expiresMs - now - lead, 0);
+    this.refreshTimer = window.setTimeout(() => {
+      this.refreshAccessToken().catch(() => {
+        this.logout();
+      });
+    }, delay);
   }
 
   setToken(token: string) {
     this.accessToken = token;
     localStorage.setItem('accessToken', token);
+    this.scheduleProactiveRefresh(token);
   }
 
   setUser(user: StoredUser) {
@@ -236,7 +298,42 @@ class APIClient {
     this.user = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
     console.info('[AUTH] Logged out; tokens cleared');
+  }
+
+  private processRefreshQueue(error: any, newToken?: string) {
+    this.refreshQueue.forEach(({ resolve, reject }) => {
+      if (error) reject(error);
+      else resolve(newToken);
+    });
+    this.refreshQueue = [];
+  }
+
+  private async refreshAccessToken(): Promise<string> {
+    if (this.isRefreshing) {
+      return new Promise((resolve, reject) => {
+        this.refreshQueue.push({ resolve, reject });
+      });
+    }
+    this.isRefreshing = true;
+    try {
+      console.log('[AUTH] Refreshing access token...');
+      const { data } = await this.client.post('/auth/refresh-token'); // cookie supplies refresh
+      const newToken = data?.token;
+      if (!newToken) throw new Error('No token returned on refresh');
+      this.setToken(newToken);
+      this.processRefreshQueue(null, newToken);
+      return newToken;
+    } catch (e) {
+      this.processRefreshQueue(e);
+      throw e;
+    } finally {
+      this.isRefreshing = false;
+    }
   }
 
   // ---------- Helper wrapper ----------
@@ -292,7 +389,11 @@ class APIClient {
 
   // Login (standard)
   async login(payload: LoginPayload) {
-    const safe = { email: payload.email, password: payload.password, rememberme: !!payload.rememberme };
+    const safe = {
+      email: payload.email,
+      password: payload.password,
+      rememberme: !!payload.rememberme,
+    };
     return this.exec('Login', async () => {
       const { data } = await this.client.post('/auth/login', safe);
       if (data?.token) this.setToken(data.token);
@@ -350,15 +451,274 @@ class APIClient {
   // Current user
   async verifyToken() {
     return this.exec('Verify Session', async () => {
-      const { data } = await this.client.get('/auth/me');
+      const { data } = await this.client.get('/auth/verify-token');
       return data;
     });
   }
 
-  // Example placeholder
-  async getSidebarUsers() {
-    return this.exec('Get Sidebar Users', async () => {
-      const { data } = await this.client.get('/chat/sidebar');
+  // Fetch full user profile by email
+  async getUserByEmail(email: string) {
+    return this.exec('Get User By Email', async () => {
+      const { data } = await this.client.post('/users/email', { email });
+      return data;
+    });
+  }
+
+  // Partial update user (by email) - only allowed editable fields
+  async updateUserByEmail(
+    email: string,
+    payload: {
+      name?: string;
+      phone?: string;
+      bio?: string;
+      skills?: Array<{ name: string; level?: string; years?: number }>;
+      qualifications?: Array<{
+        title: string;
+        institution: string;
+        year: number;
+      }>;
+      experience?: Array<{
+        company: string;
+        role: string;
+        duration: string;
+        description?: string;
+      }>;
+      links?: string[];
+    }
+  ) {
+    // Build body with ONLY allowed, non-empty fields to avoid zod unrecognized_keys & model constraints
+    const body: Record<string, unknown> = { email };
+    if (payload.name && payload.name.trim()) body.name = payload.name.trim();
+    if (payload.phone && payload.phone.trim())
+      body.phone = payload.phone.trim();
+    if (typeof payload.bio === 'string' && payload.bio.trim())
+      body.bio = payload.bio.trim();
+    if (Array.isArray(payload.links)) {
+      const links = payload.links
+        .map((l) => (typeof l === 'string' ? l.trim() : ''))
+        .filter((l) => !!l);
+      if (links.length) body.links = links;
+    }
+    if (Array.isArray(payload.skills)) {
+      const skills = payload.skills
+        .filter((s) => s && typeof s.name === 'string' && s.name.trim())
+        .map((s) => {
+          const o: { name: string; level?: string; years?: number } = {
+            name: s.name.trim(),
+          };
+          if (s.level && s.level.trim()) o.level = s.level.trim();
+          if (typeof s.years === 'number' && s.years >= 0) o.years = s.years;
+          return o;
+        });
+      if (skills.length) body.skills = skills;
+    }
+    if (Array.isArray(payload.qualifications)) {
+      const qualifications = payload.qualifications.filter(
+        (q) => q && q.title && q.institution && q.year
+      );
+      if (qualifications.length) body.qualifications = qualifications;
+    }
+    if (Array.isArray(payload.experience)) {
+      const experience = payload.experience.filter(
+        (ex) => ex && ex.company && ex.role && ex.duration
+      );
+      if (experience.length) body.experience = experience;
+    }
+    return this.exec('Update User By Email (PATCH)', async () => {
+      const { data } = await this.client.patch('/users/email', body);
+      // If the backend responds with updated user, optionally refresh local stored user basics
+      if (data?.email && this.user && this.user.email === data.email) {
+        const nextUser: StoredUser = {
+          _id: data._id || this.user._id,
+          name: data.name || this.user.name,
+          email: data.email,
+          role: data.role || this.user.role,
+          phone: data.phone || payload.phone || this.user.phone,
+        };
+        this.setUser(nextUser);
+      }
+      return data;
+    });
+  }
+
+  // User & Task Methods
+  async getUserDetails(userId: string) {
+    return this.exec('Get User Details', async () => {
+      const { data } = await this.client.get(`/users/id/${userId}`);
+      return data;
+    });
+  }
+
+  async getAllUsers() {
+    return this.exec('Get All Users', async () => {
+      const { data } = await this.client.get('/users');
+      return data;
+    });
+  }
+
+  async getAllTasks() {
+    return this.exec('Get All Tasks', async () => {
+      const { data } = await this.client.get('/tasks');
+      return data;
+    });
+  }
+
+  // Stats API Methods
+  async getAllStats() {
+    return this.exec('Get All Stats', async () => {
+      const { data } = await this.client.get('/stats/all');
+      return data;
+    });
+  }
+
+  async getUserStats() {
+    return this.exec('Get User Stats', async () => {
+      const { data } = await this.client.get('/stats/users');
+      return data;
+    });
+  }
+
+  async getTaskStats() {
+    return this.exec('Get Task Stats', async () => {
+      const { data } = await this.client.get('/stats/tasks');
+      return data;
+    });
+  }
+
+  async getOfferStats() {
+    return this.exec('Get Offer Stats', async () => {
+      const { data } = await this.client.get('/stats/offers');
+      return data;
+    });
+  }
+
+  async getReviewStats() {
+    return this.exec('Get Review Stats', async () => {
+      const { data } = await this.client.get('/stats/reviews');
+      return data;
+    });
+  }
+
+  // Chart API Methods
+  async getTaskCompletionTrend() {
+    return this.exec('Get Task Completion Trend', async () => {
+      const { data } = await this.client.get('/charts/task-completion-trend');
+      return data;
+    });
+  }
+
+  async getUserRegistrationTrend() {
+    return this.exec('Get User Registration Trend', async () => {
+      const { data } = await this.client.get('/charts/user-registration-trend');
+      return data;
+    });
+  }
+
+  async getReviewDistribution() {
+    return this.exec('Get Review Distribution', async () => {
+      const { data } = await this.client.get('/charts/review-distribution');
+      return data;
+    });
+  }
+
+  // Chat API Methods
+  async getChatRequests() {
+    return this.exec('Get Chat Requests', async () => {
+      const user = this.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Fetching chat requests for user:', user.email);
+
+      const { data } = await this.client.post(
+        '/chat/requests',
+        {
+          email: user.email,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      console.log('Chat Requests Data:', data);
+
+      return data.map((request: any) => ({
+        ...request,
+        _id: request._id,
+        userId: request.userId,
+      }));
+    });
+  }
+
+  async createChatRequest(requestData: {
+    receiverId: string;
+    task?: string;
+    title: string;
+    description: string;
+    senderId: string;
+  }) {
+    console.log('Create Request Body:', requestData);
+    return this.exec('Create Chat Request', async () => {
+      const { data } = await this.client.post(
+        '/chat/requests/add',
+        requestData
+      );
+      return data;
+    });
+  }
+
+  async respondToChatRequest(requestId: string, accepted: boolean) {
+    return this.exec('Respond to Chat Request', async () => {
+      const { data } = await this.client.post(
+        `/chat/requests/${requestId}/respond`,
+        {
+          action: accepted,
+          userId: this.user?.id,
+        }
+      );
+      return data;
+    });
+  }
+
+  async editChatRequest(
+    requestId: string,
+    requestData: {
+      title: string;
+      description: string;
+      task?: string;
+      receiverId: string;
+      senderId: string;
+    }
+  ) {
+    return this.exec('Edit Chat Request', async () => {
+      const { data } = await this.client.put(
+        `/chat/requests/${requestId}`,
+        requestData
+      );
+      return data;
+    });
+  }
+
+  async deleteChatRequest(requestId: string) {
+    return this.exec('Delete Chat Request', async () => {
+      const { data } = await this.client.delete(`/chat/requests/${requestId}`);
+      return data;
+    });
+  }
+
+  async getChatHistory(userId: string) {
+    return this.exec('Get Chat History', async () => {
+      const { data } = await this.client.get(`/chat/messages/${userId}`);
+      return data;
+    });
+  }
+
+  async getOnlineUsers() {
+    return this.exec('Get Online Users', async () => {
+      const { data } = await this.client
+        .get('/chat/sidebar')
+        .then((res) => res.data);
       return data;
     });
   }

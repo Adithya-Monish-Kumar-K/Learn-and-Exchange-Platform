@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/tasks";
+const API_URL = "http://localhost:3000/api/tasks";
 
 export const getTasks = async () => {
   const res = await axios.get(API_URL);
@@ -34,4 +34,9 @@ export const deleteTask = async (taskId: string) => {
 export const updateTask = async (taskId: string, updates: any) => {
   const res = await axios.put(`${API_URL}/${taskId}`, updates);
   return res.data;
+};
+
+export const getTaskStats = async () => {
+  const res = await axios.get(`${API_URL}/stats/summary`);
+  return res.data; 
 };

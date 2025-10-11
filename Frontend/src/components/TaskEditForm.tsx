@@ -54,26 +54,16 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
       <h3 className="text-lg font-semibold mb-4 text-gray-800">Edit Task</h3>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Title
-        </label>
-        <input
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
-          {...register('title')}
-        />
+        <label className="form-label">Title</label>
+        <input className="form-input" {...register('title')} />
         {errors.title?.message && (
           <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
         )}
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
-        <textarea
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
-          {...register('description')}
-        />
+        <label className="form-label">Description</label>
+        <textarea className="form-textarea" {...register('description')} />
         {errors.description?.message && (
           <p className="text-sm text-red-500 mt-1">
             {errors.description.message}
@@ -83,24 +73,13 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Deadline
-          </label>
-          <input
-            type="date"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
-            {...register('deadline')}
-          />
+          <label className="form-label">Deadline</label>
+          <input type="date" className="form-input" {...register('deadline')} />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Status
-          </label>
-          <select
-            className="w-full px-3 py-2 border rounded-md"
-            {...register('status')}
-          >
+          <label className="form-label">Status</label>
+          <select className="form-select" {...register('status')}>
             <option value="open">Open</option>
             <option value="in_progress">In Progress</option>
             <option value="completed">Completed</option>

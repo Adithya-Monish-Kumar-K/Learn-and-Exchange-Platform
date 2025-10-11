@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../services/apiClient';
 import { motion } from 'framer-motion';
-import {
-  BookOpen,
-  Shield,
-  Star,
-} from "lucide-react";
+import { BookOpen, Shield, Star } from 'lucide-react';
 
 const Signup: React.FC = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (apiClient.isAuthenticated()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -56,15 +59,28 @@ const Signup: React.FC = () => {
 
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-8 h-8 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
-          
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Check Your Email</h2>
+
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Check Your Email
+          </h2>
           <p className="text-gray-600 mb-6">
             A verification link has been sent to{' '}
-            <span className="font-semibold text-gray-900">{form.email}</span>. Open it to set your password and activate your account.
+            <span className="font-semibold text-gray-900">{form.email}</span>.
+            Open it to set your password and activate your account.
           </p>
 
           <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
@@ -121,7 +137,7 @@ const Signup: React.FC = () => {
               transition={{
                 duration: 4,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: 'easeInOut',
               }}
               className="absolute top-20 left-20"
             >
@@ -138,7 +154,7 @@ const Signup: React.FC = () => {
               transition={{
                 duration: 3.5,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: 'easeInOut',
                 delay: 1,
               }}
               className="absolute top-32 right-16"
@@ -156,7 +172,7 @@ const Signup: React.FC = () => {
               transition={{
                 duration: 3.8,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: 'easeInOut',
                 delay: 2,
               }}
               className="absolute bottom-32 left-16"
@@ -171,7 +187,7 @@ const Signup: React.FC = () => {
               <motion.svg
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+                transition={{ delay: 0.5, duration: 0.8, ease: 'easeOut' }}
                 width="450"
                 height="450"
                 viewBox="0 0 450 450"
@@ -189,7 +205,11 @@ const Signup: React.FC = () => {
                 {/* Stack of books - Enhanced */}
                 <motion.g
                   animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
                 >
                   <rect
                     x="140"
@@ -265,7 +285,11 @@ const Signup: React.FC = () => {
                     y: [0, -5, 0],
                     rotateX: [0, 5, 0],
                   }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
                 >
                   <path
                     d="M225 180 L170 210 L170 160 L225 130 L280 160 L280 210 Z"
@@ -336,7 +360,11 @@ const Signup: React.FC = () => {
                 {/* Character - Enhanced Student */}
                 <motion.g
                   animate={{ y: [0, -2, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
                 >
                   <circle
                     cx="225"
@@ -406,7 +434,12 @@ const Signup: React.FC = () => {
                     rx="12"
                     fill="url(#darkTeal)"
                   />
-                  <circle cx="225" cy="100" r="8" fill="rgba(255,255,255,0.3)" />
+                  <circle
+                    cx="225"
+                    cy="100"
+                    r="8"
+                    fill="rgba(255,255,255,0.3)"
+                  />
 
                   {/* Arms in welcoming gesture */}
                   <ellipse
@@ -436,7 +469,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 8,
                     repeat: Infinity,
-                    ease: "linear",
+                    ease: 'linear',
                   }}
                 >
                   <circle
@@ -465,7 +498,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 4,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                     delay: 1,
                   }}
                 >
@@ -495,7 +528,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 3,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                     delay: 0.5,
                   }}
                 >
@@ -525,7 +558,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 2.5,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                     delay: 1.5,
                   }}
                 >
@@ -553,7 +586,11 @@ const Signup: React.FC = () => {
                     opacity: [0.3, 1, 0.3],
                     pathLength: [0, 1, 0],
                   }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
                 >
                   <path
                     d="M225 130 Q280 150 320 120 Q350 100 380 140"
@@ -582,10 +619,15 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 2,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                   }}
                 >
-                  <circle cx="300" cy="200" r="12" fill="url(#yellowGradient)" />
+                  <circle
+                    cx="300"
+                    cy="200"
+                    r="12"
+                    fill="url(#yellowGradient)"
+                  />
                   <rect
                     x="296"
                     y="212"
@@ -610,7 +652,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 12,
                     repeat: Infinity,
-                    ease: "linear",
+                    ease: 'linear',
                   }}
                 >
                   <circle
@@ -642,7 +684,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 10,
                     repeat: Infinity,
-                    ease: "linear",
+                    ease: 'linear',
                   }}
                 >
                   <circle
@@ -676,7 +718,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 6,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                   }}
                 >
                   <path
@@ -694,7 +736,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 4,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                     delay: 1,
                   }}
                 >
@@ -714,7 +756,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 3,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                     delay: 2,
                   }}
                 >
@@ -734,7 +776,7 @@ const Signup: React.FC = () => {
                   transition={{
                     duration: 3,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                     staggerChildren: 0.5,
                   }}
                 >
@@ -781,27 +823,57 @@ const Signup: React.FC = () => {
                     <stop offset="100%" stopColor="#0D9488" />
                   </linearGradient>
 
-                  <linearGradient id="darkTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient
+                    id="darkTeal"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stopColor="#0F766E" />
                     <stop offset="100%" stopColor="#134E4A" />
                   </linearGradient>
 
-                  <linearGradient id="book1" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient
+                    id="book1"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stopColor="#10B981" />
                     <stop offset="100%" stopColor="#059669" />
                   </linearGradient>
 
-                  <linearGradient id="book2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient
+                    id="book2"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stopColor="#14B8A6" />
                     <stop offset="100%" stopColor="#0891B2" />
                   </linearGradient>
 
-                  <linearGradient id="book3" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient
+                    id="book3"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stopColor="#8B5CF6" />
                     <stop offset="100%" stopColor="#7C3AED" />
                   </linearGradient>
 
-                  <linearGradient id="book4" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient
+                    id="book4"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
                     <stop offset="0%" stopColor="#EF4444" />
                     <stop offset="100%" stopColor="#DC2626" />
                   </linearGradient>
@@ -933,7 +1005,7 @@ const Signup: React.FC = () => {
               transition={{
                 duration: 4,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: 'easeInOut',
               }}
               className="absolute bottom-4 right-16 bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg max-w-xs"
             >
@@ -949,7 +1021,9 @@ const Signup: React.FC = () => {
 
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Create Account
+            </h2>
             <p className="text-sm text-gray-600">Sign up to get started</p>
           </div>
 
@@ -961,7 +1035,10 @@ const Signup: React.FC = () => {
 
           <form onSubmit={submit} className="space-y-5">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Full Name
               </label>
               <input
@@ -978,7 +1055,10 @@ const Signup: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Email
               </label>
               <input
@@ -995,7 +1075,10 @@ const Signup: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Phone
               </label>
               <input
@@ -1021,7 +1104,10 @@ const Signup: React.FC = () => {
 
             <div className="text-center text-sm text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link
+                to="/login"
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
                 Sign in
               </Link>
             </div>

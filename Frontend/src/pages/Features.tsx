@@ -16,6 +16,7 @@ import {
   CheckCircle,
   ArrowRight
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const FeaturesPage: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -106,28 +107,35 @@ const FeaturesPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-100">
+      <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="font-semibold text-xl text-gray-900">
+            <div className="font-bold text-2xl text-gray-900">
               SkillExchange
             </div>
             
             <nav className="hidden md:flex space-x-8">
-              <a href="/" className="text-gray-600 hover:text-gray-900 transition-colors">Home</a>
-              <a href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About</a>
-              <a href="/features" className="text-gray-900 font-medium">Features</a>
-              <a href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
+              <a href="/" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Home</a>
+              <a href="/about" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">About</a>
+              <a href="/features" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Features</a>
+              <a href="/contact" className="text-gray-700 hover:text-gray-900 transition-colors font-medium">Contact</a>
             </nav>
             
-            <div className="hidden md:block">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                Get Started
-              </button>
+            <div className="hidden md:flex gap-3">
+              <Link to="/login">
+                <button className="text-gray-700 hover:text-gray-900 px-4 py-2 transition-colors font-medium">
+                  Log In
+                </button>
+              </Link>
+              <Link to="/signup">
+                <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                  Join Now
+                </button>
+              </Link>
             </div>
             
             <button 
-              className="md:hidden"
+              className="md:hidden text-gray-900"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -135,15 +143,22 @@ const FeaturesPage: React.FC = () => {
           </div>
           
           {isMenuOpen && (
-            <div className="md:hidden border-t border-gray-100 py-4">
+            <div className="md:hidden border-t border-gray-200 py-4">
               <div className="flex flex-col space-y-4">
-                <a href="#" className="text-gray-600">Home</a>
-                <a href="#" className="text-gray-600">About</a>
-                <a href="#" className="text-gray-900 font-medium">Features</a>
-                <a href="#" className="text-gray-600">Contact</a>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md w-fit">
-                  Get Started
+                <a href="#" className="text-gray-700">Home</a>
+                <a href="#" className="text-gray-700">About</a>
+                <a href="#" className="text-gray-700">Features</a>
+                <a href="#" className="text-gray-700">Contact</a>
+                <Link to="/login">
+                <button className="text-gray-700 hover:text-gray-900 px-4 py-2 transition-colors font-medium">
+                  Log In
                 </button>
+              </Link>
+                <Link to="/signup">
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg w-fit">
+                    Join Now
+                  </button>
+                </Link>
               </div>
             </div>
           )}
@@ -151,10 +166,12 @@ const FeaturesPage: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="min-h-[calc(100vh-4rem)] py-20 lg:py-28 relative overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0 bg-center bg-no-repeat bg-cover" style={{ backgroundImage: "url('/assets/features.jpg')" }}/>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
-            <h1 className="text-4xl lg:text-6xl font-light text-gray-900 leading-tight mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
               Powerful <span className="text-blue-600">Features</span>
               <br />
               Built for Success
