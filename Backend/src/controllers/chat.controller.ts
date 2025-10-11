@@ -19,7 +19,7 @@ export const getUsersForSidebar = async (req: any, res: any) => {
       })
       .sort({ updatedAt: -1 });
 
-    const sidebar = chats.map((chat) => {
+  const sidebar = chats.map((chat: any) => {
       const otherParticipants = (chat.participants as any[]).filter(
         (p: any) => p._id.toString() !== loggedInUserId.toString()
       );
