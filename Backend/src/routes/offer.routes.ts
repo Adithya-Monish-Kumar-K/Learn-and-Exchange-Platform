@@ -10,7 +10,7 @@ import {
   acceptOffer,
   withdrawOffer,
   addFeedback,
-} from "../controllers/offer";
+} from "../controllers/offer.controller";
 
 const router = express.Router();
 

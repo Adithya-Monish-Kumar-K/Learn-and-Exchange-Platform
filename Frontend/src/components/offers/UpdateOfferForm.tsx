@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Save } from 'lucide-react';
-import { IOffer, ITask } from '../../types';
-import { offersAPI, tasksAPI } from '../../services/api';
+import type { IOffer, ITask } from '../../types';
+import type { IUpdateOfferPayload } from '../../types/index';
+import { getTasks } from '../../services/taskService';
+import offerService from '../../services/offerService';
 
 const UpdateOfferForm: React.FC = () => {
   const navigate = useNavigate();
@@ -18,7 +20,7 @@ const UpdateOfferForm: React.FC = () => {
     valueType: 'service',
     valueDetail: '',
     assets: [],
-    status: 'pending'
+    status: 'pending',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -31,38 +33,51 @@ const UpdateOfferForm: React.FC = () => {
 
   const fetchOfferAndTasks = async () => {
     try {
-      const [tasksResponse, offerResponse] = await Promise.all([
-        tasksAPI.getAll(),
-        offersAPI.getById(id!)
+      const [tasks, offer] = await Promise.all([
+        getTasks(),
+        offerService.getOfferById(id!),
       ]);
-      
-      if (tasksResponse.data && tasksResponse.data.data) {
-        setTasks(tasksResponse.data.data);
-      }
-      if (offerResponse.data && offerResponse.data.data) {
-        setFormData(offerResponse.data.data);
-      } else {
-        throw new Error('Invalid response format');
-      }
+
+      setTasks(tasks);
+      setFormData(offer.data);
     } catch (error) {
       console.error('Error fetching data:', error);
-      
+
       // Fallback to mock data if backend is not available
       const mockTasks: ITask[] = [
-        { _id: '1', title: 'Website Development', description: 'Build a responsive website', category: 'Development', createdBy: 'user1' },
-        { _id: '2', title: 'Logo Design', description: 'Design company logo', category: 'Design', createdBy: 'user2' },
-        { _id: '3', title: 'Content Writing', description: 'Write blog posts', category: 'Writing', createdBy: 'user3' }
+        {
+          _id: '1',
+          title: 'Website Development',
+          description: 'Build a responsive website',
+          category: 'Development',
+          createdBy: 'user1',
+        },
+        {
+          _id: '2',
+          title: 'Logo Design',
+          description: 'Design company logo',
+          category: 'Design',
+          createdBy: 'user2',
+        },
+        {
+          _id: '3',
+          title: 'Content Writing',
+          description: 'Write blog posts',
+          category: 'Writing',
+          createdBy: 'user3',
+        },
       ];
-      
+
       const mockOffer: IOffer = {
         _id: id,
         task: '1',
         offeredBy: 'current-user-id',
-        description: 'I can help with frontend development using React and TypeScript. I have 5 years of experience and can deliver high-quality, responsive websites.',
+        description:
+          'I can help with frontend development using React and TypeScript. I have 5 years of experience and can deliver high-quality, responsive websites.',
         valueType: 'service',
         valueDetail: '$75/hour',
         assets: ['portfolio-link', 'github-profile'],
-        status: 'pending'
+        status: 'pending',
       };
 
       setTasks(mockTasks);
@@ -95,7 +110,7 @@ const UpdateOfferForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error('Please fix the errors in the form');
       return;
@@ -103,25 +118,30 @@ const UpdateOfferForm: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await offersAPI.update(id!, formData);
-      toast.success(response.data.message || 'Offer updated successfully!');
+      const response = await offerService.updateOffer(id!, formData);
+      toast.success(response.message || 'Offer updated successfully!');
       navigate('/offers');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating offer:', error);
-      const errorMessage = error.response?.data?.message || 'Failed to update offer. Please try again.';
+      const errorMessage =
+        error.message || 'Failed to update offer. Please try again.';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -142,12 +162,17 @@ const UpdateOfferForm: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Update Offer</h1>
-            <p className="text-gray-600 mt-2">Modify your offer details below.</p>
+            <p className="text-gray-600 mt-2">
+              Modify your offer details below.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="task" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="task"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Task *
               </label>
               <select
@@ -160,17 +185,22 @@ const UpdateOfferForm: React.FC = () => {
                 }`}
               >
                 <option value="">Select a task</option>
-                {tasks.map(task => (
+                {tasks.map((task) => (
                   <option key={task._id} value={task._id}>
                     {task.title} - {task.category}
                   </option>
                 ))}
               </select>
-              {errors.task && <p className="text-red-500 text-xs mt-1">{errors.task}</p>}
+              {errors.task && (
+                <p className="text-red-500 text-xs mt-1">{errors.task}</p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Description *
               </label>
               <textarea
@@ -185,13 +215,20 @@ const UpdateOfferForm: React.FC = () => {
                 }`}
               />
               <div className="flex justify-between mt-1">
-                {errors.description && <p className="text-red-500 text-xs">{errors.description}</p>}
-                <p className="text-gray-400 text-xs">{formData.description.length}/500</p>
+                {errors.description && (
+                  <p className="text-red-500 text-xs">{errors.description}</p>
+                )}
+                <p className="text-gray-400 text-xs">
+                  {formData.description.length}/500
+                </p>
               </div>
             </div>
 
             <div>
-              <label htmlFor="valueType" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="valueType"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Value Type *
               </label>
               <select
@@ -208,11 +245,16 @@ const UpdateOfferForm: React.FC = () => {
                 <option value="asset">Asset</option>
                 <option value="other">Other</option>
               </select>
-              {errors.valueType && <p className="text-red-500 text-xs mt-1">{errors.valueType}</p>}
+              {errors.valueType && (
+                <p className="text-red-500 text-xs mt-1">{errors.valueType}</p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="valueDetail" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="valueDetail"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Value Detail
               </label>
               <input
@@ -227,7 +269,10 @@ const UpdateOfferForm: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Status
               </label>
               <select
@@ -245,7 +290,10 @@ const UpdateOfferForm: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="assets" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="assets"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Assets (Optional)
               </label>
               <input
@@ -253,10 +301,15 @@ const UpdateOfferForm: React.FC = () => {
                 id="assets"
                 name="assets"
                 value={formData.assets?.join(', ') || ''}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  assets: e.target.value.split(',').map(item => item.trim()).filter(Boolean)
-                }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    assets: e.target.value
+                      .split(',')
+                      .map((item) => item.trim())
+                      .filter(Boolean),
+                  }))
+                }
                 placeholder="List any relevant files, links, or resources (comma-separated)"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -277,7 +330,7 @@ const UpdateOfferForm: React.FC = () => {
                   </>
                 )}
               </button>
-              
+
               <button
                 type="button"
                 onClick={() => navigate('/offers')}

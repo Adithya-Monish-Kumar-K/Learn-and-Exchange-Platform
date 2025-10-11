@@ -56,6 +56,11 @@ class APIClient {
     }
   }
 
+  // Get axios client instance
+  getClient(): AxiosInstance {
+    return this.client;
+  }
+
   // ---------- Interceptors & Logging ----------
   private setupInterceptors() {
     this.client.interceptors.request.use((config: any) => {

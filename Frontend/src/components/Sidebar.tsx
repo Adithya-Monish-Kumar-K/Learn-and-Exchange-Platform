@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   MessageCircle,
-  CheckSquare,
   Settings,
   Home,
-  Users,
   BarChart3,
   LogOut,
   Sun,
@@ -40,44 +38,30 @@ export default function ModernSidebar() {
   const { isDark, toggleTheme } = useTheme();
 
   const navItems: NavItem[] = [
-    { id: 'overview', path: '/user/dashboard', label: 'Overview', icon: Home },
+    { id: 'overview', path: '/dashboard', label: 'Overview', icon: Home },
     {
       id: 'chat',
-      path: '/user/chat',
+      path: '/chat',
       label: 'Chat',
       icon: MessageCircle,
       badge: 3,
     },
     {
-      id: 'tasks',
-      path: '/user/tasks',
-      label: 'Tasks',
-      icon: CheckSquare,
-      badge: 5,
-    },
-    {
-      id: 'analytics',
-      path: '/user/analytics',
-      label: 'Analytics',
+      id: 'offers',
+      path: '/offers',
+      label: 'Offers',
       icon: BarChart3,
-    },
-    {
-      id: 'team',
-      path: '/user/team',
-      label: 'Team',
-      icon: Users,
       divider: true,
     },
     {
-      id: 'notifications',
+      id: 'profile',
       path: '/profile',
       label: 'Profile',
       icon: User,
-      badge: 2,
     },
     {
       id: 'settings',
-      path: '/dashboard/settings',
+      path: '/settings',
       label: 'Settings',
       icon: Settings,
       divider: true,

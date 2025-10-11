@@ -15,39 +15,54 @@ import apiClient from './services/apiClient';
 import About from './pages/About';
 import FeaturesPage from './pages/Features';
 import ContactPage from './pages/Contact';
+import Offers from './pages/offers';
+import CreateOfferForm from './components/offers/CreateOfferForm';
+import UpdateOfferForm from './components/offers/UpdateOfferForm';
 
 function App() {
   return (
     <Router>
       <ThemeProvider>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/about" element={<About />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/contact" element={<ContactPage />} />
+
+          {/* Authentication Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/set-password" element={<SetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Protected Routes */}
           <Route
-            path="/user"
             element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }
           >
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="profile" element={<UserProfileFormClass />} />
+            {/* Dashboard Routes */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<UserProfileFormClass />} />
+
+            {/* Chat Routes */}
             <Route
-              path="chat"
+              path="/chat"
               element={
                 <div className="h-[calc(100vh-4rem)]">
                   <Chat currentUser={apiClient.getUser()} />
                 </div>
               }
             />
+
+            {/* Offers Routes */}
+            <Route path="/offers" element={<Offers />} />
+            <Route path="/offers/create" element={<CreateOfferForm />} />
+            <Route path="/offers/edit/:id" element={<UpdateOfferForm />} />
           </Route>
         </Routes>
       </ThemeProvider>

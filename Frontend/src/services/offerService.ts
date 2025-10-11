@@ -16,7 +16,7 @@ import type {
  * Centralized service for all offer-related API operations.
  * Uses apiClient for consistent auth, interceptors, and error handling.
  */
-class OfferService {
+export class OfferService {
   private readonly basePath = '/offers';
 
   /**

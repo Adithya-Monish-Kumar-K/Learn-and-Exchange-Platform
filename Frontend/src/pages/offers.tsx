@@ -2,9 +2,68 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Plus, Search, Filter } from 'lucide-react';
-import { IOffer } from '../types';
-import { offersAPI } from '../services/api';
+import offerService from '../services/offerService';
 import OfferCard from '../components/Offers/OfferCard';
+
+interface IOffer {
+  _id?: string;
+  task:
+    | string
+    | {
+        _id: string;
+        title: string;
+        description?: string;
+        category?: string;
+        difficulty?: string;
+        createdBy?: string;
+      };
+  offeredBy:
+    | string
+    | {
+        _id: string;
+        name: string;
+        avatar?: string;
+        bio?: string;
+        rating?: number;
+        level?: number;
+        tasksCompleted?: number;
+      };
+  description: string;
+  valueType: 'service' | 'skill' | 'asset' | 'other';
+  valueDetail?: string;
+  assets?: string[];
+  status?: 'pending' | 'accepted' | 'declined' | 'withdrawn';
+  acceptedBy?:
+    | string
+    | {
+        _id: string;
+        name: string;
+        avatar?: string;
+        rating?: number;
+        level?: number;
+      };
+  acceptedAt?: Date | string;
+  expiresAt?: Date | string;
+  priority?: 'low' | 'medium' | 'high';
+  estimatedDelivery?: Date | string;
+  terms?: string;
+  attachments?: Array<{
+    filename: string;
+    url: string;
+    fileType: string;
+    uploadedAt: Date | string;
+  }>;
+  feedback?: {
+    rating?: number;
+    comment?: string;
+    givenBy?: string;
+    givenAt?: Date | string;
+  };
+  isActive?: boolean;
+  viewCount?: number;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+}
 
 const Offers: React.FC = () => {
   const navigate = useNavigate();
@@ -25,53 +84,56 @@ const Offers: React.FC = () => {
       if (statusFilter !== 'all') params.status = statusFilter;
       if (valueTypeFilter !== 'all') params.valueType = valueTypeFilter;
       if (searchTerm) params.search = searchTerm;
-      
-      const response = await offersAPI.getAll(params);
-      if (response.data && response.data.data) {
-        setOffers(response.data.data);
+
+      const response = await offerService.getAllOffers(params);
+      if (response.data) {
+        setOffers(response.data);
       } else {
         throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error('Error fetching offers:', error);
-      
+
       // Fallback to mock data if backend is not available
       const mockOffers: IOffer[] = [
         {
           _id: '1',
           task: 'Website Development',
           offeredBy: 'current-user-id',
-          description: 'I can help with frontend development using React and TypeScript. I have 5 years of experience and can deliver high-quality, responsive websites.',
+          description:
+            'I can help with frontend development using React and TypeScript. I have 5 years of experience and can deliver high-quality, responsive websites.',
           valueType: 'service',
           valueDetail: '$75/hour',
           assets: ['portfolio-link', 'github-profile'],
           status: 'pending',
-          createdAt: new Date('2024-01-15')
+          createdAt: new Date('2024-01-15'),
         },
         {
           _id: '2',
           task: 'Logo Design',
           offeredBy: 'user-2',
-          description: 'Professional logo design services with unlimited revisions. I specialize in modern, minimalist designs that capture your brand essence.',
+          description:
+            'Professional logo design services with unlimited revisions. I specialize in modern, minimalist designs that capture your brand essence.',
           valueType: 'service',
           valueDetail: '$150 fixed price',
           assets: ['behance-portfolio'],
           status: 'accepted',
-          createdAt: new Date('2024-01-12')
+          createdAt: new Date('2024-01-12'),
         },
         {
           _id: '3',
           task: 'Content Writing',
           offeredBy: 'user-3',
-          description: 'I can write engaging blog posts, articles, and web content. Native English speaker with 3+ years of content marketing experience.',
+          description:
+            'I can write engaging blog posts, articles, and web content. Native English speaker with 3+ years of content marketing experience.',
           valueType: 'skill',
           valueDetail: '$0.10/word',
           assets: [],
           status: 'pending',
-          createdAt: new Date('2024-01-10')
-        }
+          createdAt: new Date('2024-01-10'),
+        },
       ];
-      
+
       setOffers(mockOffers);
       toast.error('Backend not available - using demo data');
     } finally {
@@ -89,21 +151,24 @@ const Offers: React.FC = () => {
     }
 
     try {
-      const response = await offersAPI.delete(id);
-      setOffers(prev => prev.filter(offer => offer._id !== id));
-      toast.success(response.data.message || 'Offer deleted successfully');
+      const response = await offerService.deleteOffer(id);
+      setOffers((prev) => prev.filter((offer) => offer._id !== id));
+      toast.success(response.message || 'Offer deleted successfully');
     } catch (error) {
       console.error('Error deleting offer:', error);
       toast.error('Failed to delete offer');
     }
   };
 
-  const filteredOffers = offers.filter(offer => {
-    const matchesSearch = offer.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         offer.valueType.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || offer.status === statusFilter;
-    const matchesValueType = valueTypeFilter === 'all' || offer.valueType === valueTypeFilter;
-    
+  const filteredOffers = offers.filter((offer) => {
+    const matchesSearch =
+      offer.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      offer.valueType.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === 'all' || offer.status === statusFilter;
+    const matchesValueType =
+      valueTypeFilter === 'all' || offer.valueType === valueTypeFilter;
+
     return matchesSearch && matchesStatus && matchesValueType;
   });
 
@@ -124,9 +189,11 @@ const Offers: React.FC = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Offers</h1>
-            <p className="text-gray-600 mt-2">Manage your offers and connect with tasks in the community.</p>
+            <p className="text-gray-600 mt-2">
+              Manage your offers and connect with tasks in the community.
+            </p>
           </div>
-          
+
           <button
             onClick={() => navigate('/offers/create')}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center space-x-2 transition-colors"
@@ -149,7 +216,7 @@ const Offers: React.FC = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            
+
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <select
@@ -164,7 +231,7 @@ const Offers: React.FC = () => {
                 <option value="withdrawn">Withdrawn</option>
               </select>
             </div>
-            
+
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <select
@@ -188,7 +255,9 @@ const Offers: React.FC = () => {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Plus className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No offers found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No offers found
+            </h3>
             <p className="text-gray-600 mb-6">
               {searchTerm || statusFilter !== 'all' || valueTypeFilter !== 'all'
                 ? 'Try adjusting your search or filters'
@@ -203,7 +272,7 @@ const Offers: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredOffers.map(offer => (
+            {filteredOffers.map((offer) => (
               <OfferCard
                 key={offer._id}
                 offer={offer}
