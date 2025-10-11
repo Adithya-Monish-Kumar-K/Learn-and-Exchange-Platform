@@ -129,6 +129,76 @@
     --sidebar-foreground: #111827;
     --sidebar-border: #e5e7eb;
     --sidebar-muted: #6b7280;
+
+    /* Form field colors */
+    --input-background: #f3f4f6;
+    --input-border: #e5e7eb;
+    --input-border-focus: #3b82f6;
+    --input-text: #111827;
+    --input-placeholder: #9ca3af;
+
+    /* Chat UI colors */
+    --chat-primary: #2563eb;
+    --chat-primary-hover: #1d4ed8;
+    --chat-secondary: #f3f4f6;
+    --chat-secondary-hover: #e5e7eb;
+    --chat-accent: #3b82f6;
+    --chat-border: #e5e7eb;
+    --chat-message-sent: #2563eb;
+    --chat-message-received: #f3f4f6;
+  }
+
+  /* Form field styles */
+  .form-input,
+  .form-textarea,
+  .form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background-color: var(--input-background);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .form-input:focus,
+  .form-textarea:focus,
+  .form-select:focus {
+    outline: none;
+    border-color: var(--input-border-focus);
+    box-shadow:
+      0 0 0 2px var(--input-border-focus),
+      0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .form-input::placeholder,
+  .form-textarea::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  .form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.375rem;
+  }
+
+  .form-error {
+    font-size: 0.875rem;
+    color: var(--error);
+    margin-top: 0.25rem;
   }
 
   .dark {
@@ -140,6 +210,23 @@
     --card-background: #1f2937;
     --card-border: #374151;
     --card-shadow: rgba(0, 0, 0, 0.25);
+
+    /* Form field colors */
+    --input-background: #1f2937;
+    --input-border: #374151;
+    --input-border-focus: #60a5fa;
+    --input-text: #f9fafb;
+    --input-placeholder: #6b7280;
+
+    /* Chat UI colors */
+    --chat-primary: #3b82f6;
+    --chat-primary-hover: #2563eb;
+    --chat-secondary: #1f2937;
+    --chat-secondary-hover: #374151;
+    --chat-accent: #60a5fa;
+    --chat-border: #374151;
+    --chat-message-sent: #3b82f6;
+    --chat-message-received: #1f2937;
 
     /* Text colors */
     --text-primary: #f9fafb;

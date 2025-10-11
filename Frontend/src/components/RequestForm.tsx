@@ -140,21 +140,13 @@ const RequestForm: React.FC<Props> = ({
               <Form>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label
-                      className="text-sm block mb-1"
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
+                    <label className="form-label">
                       User
                     </label>
                     <Field
                       as="select"
                       name="user"
-                      className="w-full p-2 rounded-md"
-                      style={{
-                        backgroundColor: 'var(--input-background)',
-                        color: 'var(--text-primary)',
-                        borderColor: 'var(--input-border)',
-                      }}
+                      className="form-select"
                     >
                       <option value="">Select user</option>
                       {users.map((u) => (
@@ -174,21 +166,13 @@ const RequestForm: React.FC<Props> = ({
                   </div>
 
                   <div>
-                    <label
-                      className="text-sm block mb-1"
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
+                    <label className="form-label">
                       Task (optional)
                     </label>
                     <Field
                       as="select"
                       name="task"
-                      className="w-full p-2 rounded-md"
-                      style={{
-                        backgroundColor: 'var(--input-background)',
-                        color: 'var(--text-primary)',
-                        borderColor: 'var(--input-border)',
-                      }}
+                      className="form-select"
                     >
                       <option value="">None</option>
                       {tasks.map((t) => (
@@ -200,54 +184,32 @@ const RequestForm: React.FC<Props> = ({
                   </div>
 
                   <div>
-                    <label
-                      className="text-sm block mb-1"
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
+                    <label className="form-label">
                       Title
                     </label>
                     <Field
                       name="title"
-                      className="w-full p-2 rounded-md"
-                      style={{
-                        backgroundColor: 'var(--input-background)',
-                        color: 'var(--text-primary)',
-                        borderColor: 'var(--input-border)',
-                      }}
+                      className="form-input"
                     />
                     {errors.title && (
-                      <div
-                        className="text-sm mt-1"
-                        style={{ color: 'var(--error)' }}
-                      >
+                      <div className="form-error">
                         {(errors as any).title}
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <label
-                      className="text-sm block mb-1"
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
+                    <label className="form-label">
                       Description
                     </label>
                     <Field
                       as="textarea"
                       name="description"
                       rows={4}
-                      className="w-full p-2 rounded-md"
-                      style={{
-                        backgroundColor: 'var(--input-background)',
-                        color: 'var(--text-primary)',
-                        borderColor: 'var(--input-border)',
-                      }}
+                      className="form-textarea"
                     />
                     {errors.description && (
-                      <div
-                        className="text-sm mt-1"
-                        style={{ color: 'var(--error)' }}
-                      >
+                      <div className="form-error">
                         {(errors as any).description}
                       </div>
                     )}

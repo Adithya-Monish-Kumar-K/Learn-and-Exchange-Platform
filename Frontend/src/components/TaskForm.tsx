@@ -35,27 +35,21 @@ const TaskForm: React.FC<{ onTaskCreated: () => void }> = ({
       </h3>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Title
-        </label>
+        <label className="form-label">Title</label>
         <input
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
+          className="form-input"
           {...register('title', {
             required: 'Title is required',
             minLength: 5,
           })}
         />
-        {errors.title && (
-          <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-        )}
+        {errors.title && <p className="form-error">{errors.title.message}</p>}
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
+        <label className="form-label">Description</label>
         <textarea
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
+          className="form-textarea"
           rows={4}
           {...register('description', { required: 'Description is required' })}
         />
@@ -68,12 +62,10 @@ const TaskForm: React.FC<{ onTaskCreated: () => void }> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Deadline
-          </label>
+          <label className="form-label">Deadline</label>
           <input
             type="date"
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
+            className="form-input"
             {...register('deadline', { required: 'Deadline required' })}
           />
           {errors.deadline && (

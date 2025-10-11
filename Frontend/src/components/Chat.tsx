@@ -145,7 +145,7 @@ const Chat: React.FC<ChatProps> = ({ currentUser }) => {
     try {
       const request = {
         receiverId: values.user,
-        senderId: currentUser.id.toString(), // Ensure it's a string
+        senderId: currentUser.id.toString(),
         task: values.task,
         title: values.title,
         description: values.description,
@@ -157,6 +157,8 @@ const Chat: React.FC<ChatProps> = ({ currentUser }) => {
           title: values.title,
           description: values.description,
           task: values.task,
+          receiverId: values.user,
+          senderId: currentUser.id.toString(),
         });
       } else {
         // Create new request
@@ -355,18 +357,13 @@ const Chat: React.FC<ChatProps> = ({ currentUser }) => {
                   type="text"
                   name="message"
                   placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 rounded-lg"
-                  style={{
-                    background: 'var(--input-background)',
-                    color: 'var(--text-primary)',
-                    borderColor: 'var(--card-border)',
-                  }}
+                  className="form-input flex-1"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg"
+                  className="px-4 py-2 rounded-lg font-medium hover:bg-[var(--chat-primary-hover)] transition-colors"
                   style={{
-                    background: 'var(--primary)',
+                    background: 'var(--chat-primary)',
                     color: 'white',
                   }}
                 >

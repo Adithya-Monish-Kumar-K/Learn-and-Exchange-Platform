@@ -46,8 +46,8 @@ const ChatUserList: React.FC<ChatUserListProps> = ({
           <div className="flex gap-2">
             <button
               onClick={onNewRequest}
-              className="px-3 py-1 rounded-md text-sm"
-              style={{ background: 'var(--info)', color: 'white' }}
+              className="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-[var(--chat-primary-hover)] transition-colors"
+              style={{ background: 'var(--chat-primary)', color: 'white' }}
             >
               New Request
             </button>
@@ -59,12 +59,7 @@ const ChatUserList: React.FC<ChatUserListProps> = ({
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 pr-10 rounded-lg"
-            style={{
-              background: 'var(--input-background)',
-              color: 'var(--text-primary)',
-              borderColor: 'var(--card-border)',
-            }}
+            className="form-input pr-10"
           />
           <Search
             className="absolute right-3 top-2.5 w-5 h-5"
@@ -73,9 +68,9 @@ const ChatUserList: React.FC<ChatUserListProps> = ({
         </div>
         <button
           onClick={onViewRequests}
-          className="w-full mt-3 px-3 py-2 rounded-md text-sm flex justify-center items-center gap-2"
+          className="w-full mt-3 px-3 py-2 rounded-md text-sm font-medium flex justify-center items-center gap-2 hover:bg-[var(--chat-secondary-hover)] transition-colors"
           style={{
-            background: 'var(--card-background-secondary)',
+            background: 'var(--chat-secondary)',
             color: 'var(--text-primary)',
           }}
         >

@@ -687,6 +687,8 @@ class APIClient {
       title: string;
       description: string;
       task?: string;
+      receiverId: string;
+      senderId: string;
     }
   ) {
     return this.exec('Edit Chat Request', async () => {

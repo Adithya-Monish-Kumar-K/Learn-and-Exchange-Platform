@@ -473,7 +473,6 @@ export const editRequest = async (req: any, res: any) => {
   try {
     const { id: chatId } = req.params;
     const { title, description } = req.body;
-    const userId = req.user._id as string;
 
     if (!Types.ObjectId.isValid(chatId)) {
       return res.status(400).json({ message: 'Invalid chat ID' });
@@ -486,13 +485,6 @@ export const editRequest = async (req: any, res: any) => {
 
     if (chat.type !== 'request') {
       return res.status(400).json({ message: 'Not a chat request' });
-    }
-
-    // Verify the user is the sender of the request
-    if (chat.participants[0].toString() !== userId) {
-      return res
-        .status(403)
-        .json({ message: 'Not authorized to edit this request' });
     }
 
     if (chat.status !== 'pending') {

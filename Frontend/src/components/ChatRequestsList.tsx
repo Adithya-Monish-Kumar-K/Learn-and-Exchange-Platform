@@ -92,12 +92,7 @@ const ChatRequestsList: React.FC<ChatRequestsListProps> = ({
             placeholder="Search requests..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 pr-10 rounded-lg"
-            style={{
-              background: 'var(--input-background)',
-              color: 'var(--text-primary)',
-              borderColor: 'var(--card-border)',
-            }}
+            className="form-input pr-10"
           />
           <Search
             className="absolute right-3 top-2.5 w-5 h-5"
@@ -112,12 +107,12 @@ const ChatRequestsList: React.FC<ChatRequestsListProps> = ({
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className="px-3 py-1 rounded-md text-sm capitalize"
+                className="px-3 py-1.5 rounded-md text-sm font-medium capitalize hover:bg-opacity-90 transition-colors"
                 style={{
                   background:
                     filterStatus === status
-                      ? 'var(--primary)'
-                      : 'var(--card-background-secondary)',
+                      ? 'var(--chat-primary)'
+                      : 'var(--chat-secondary)',
                   color:
                     filterStatus === status ? 'white' : 'var(--text-primary)',
                 }}
