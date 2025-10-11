@@ -5,13 +5,16 @@ import { createTask } from '../services/taskService';
 interface TaskFormData {
   title: string;
   description: string;
-  postedBy: string;
   deadline: string;
+  requirements?: string[];
+  attachments?: string[];
+  offer?: string[];
 }
 
-const TaskForm: React.FC<{ onTaskCreated: () => void }> = ({
-  onTaskCreated,
-}) => {
+const TaskForm: React.FC<{
+  onTaskCreated: () => void;
+  userId: string; // Add userId prop
+}> = ({ onTaskCreated, userId }) => {
   const {
     register,
     handleSubmit,
@@ -20,9 +23,21 @@ const TaskForm: React.FC<{ onTaskCreated: () => void }> = ({
   } = useForm<TaskFormData>();
 
   const onSubmit = async (data: TaskFormData) => {
-    await createTask(data);
-    reset();
-    onTaskCreated(); // reload tasks in parent
+    try {
+      const taskData = {
+        ...data,
+        postedBy: userId, // Add the user ID
+        status: 'Pending', // Set initial status
+        requirements: [], // Initialize empty arrays for optional fields
+        attachments: [],
+        offer: [],
+      };
+      await createTask(taskData);
+      reset();
+      onTaskCreated();
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
   };
 
   return (

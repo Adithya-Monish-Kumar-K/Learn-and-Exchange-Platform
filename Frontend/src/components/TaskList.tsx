@@ -10,6 +10,7 @@ import TaskForm from './TaskForm';
 import TaskEditForm from './TaskEditForm';
 
 const TaskList: React.FC = () => {
+  const user = localStorage.getItem('user');
   const [tasks, setTasks] = useState<any[]>([]);
   const [editingTask, setEditingTask] = useState<any | null>(null);
 
@@ -29,7 +30,9 @@ const TaskList: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-800">Task Manager</h1>
         </div>
 
-        {!editingTask && <TaskForm onTaskCreated={loadTasks} />}
+        {!editingTask && (
+          <TaskForm onTaskCreated={loadTasks} userId={user.id} />
+        )}
         {editingTask && (
           <div className="mb-6">
             <TaskEditForm

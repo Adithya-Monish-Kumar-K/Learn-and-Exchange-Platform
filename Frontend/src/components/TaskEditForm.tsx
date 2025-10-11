@@ -14,7 +14,13 @@ const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   deadline: z.string().optional(),
-  status: z.enum(['open', 'in_progress', 'completed', 'cancelled']),
+  status: z.enum([
+    'Pending',
+    'Assigned',
+    'In Progress',
+    'Completed',
+    'Cancelled',
+  ]),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -80,10 +86,11 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
         <div>
           <label className="form-label">Status</label>
           <select className="form-select" {...register('status')}>
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="Pending">Pending</option>
+            <option value="Assigned">Assigned</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
           </select>
         </div>
       </div>
