@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Send } from 'lucide-react';
-import type { IOffer, ITask } from '../../types';
-import type { ICreateOfferPayload } from '../../types/index';
+import type { ICreateOfferPayload } from '../../types';
+// ITask is not exported in frontend types; define a minimal local type for form usage
+type ITask = { _id: string; title: string; category?: string; description?: string; createdBy?: string };
 import { getTasks } from '../../services/taskService';
 import offerService from '../../services/offerService';
 
@@ -95,10 +96,11 @@ const CreateOfferForm: React.FC = () => {
       const response = await offerService.createOffer(formData);
       toast.success(response.message || 'Offer created successfully!');
       navigate('/offers');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating offer:', error);
-      const errorMessage =
-        error.message || 'Failed to create offer. Please try again.';
+      const errorMessage = (error && typeof error === 'object' && 'message' in error)
+        ? String((error as { message?: unknown }).message)
+        : 'Failed to create offer. Please try again.';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -120,24 +122,21 @@ const CreateOfferForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8" style={{ background: 'var(--background)' }}>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="rounded-xl shadow-sm p-6" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
               Create New Offer
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
               Share your skills, services, or assets with the community.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label
-                htmlFor="task"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="task" className="form-label">
                 Task *
               </label>
               <select
@@ -145,9 +144,7 @@ const CreateOfferForm: React.FC = () => {
                 name="task"
                 value={formData.task}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.task ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`form-select ${errors.task ? 'border-red-300' : ''}`}
               >
                 <option value="">Select a task</option>
                 {tasks.map((task) => (
@@ -157,15 +154,12 @@ const CreateOfferForm: React.FC = () => {
                 ))}
               </select>
               {errors.task && (
-                <p className="text-red-500 text-xs mt-1">{errors.task}</p>
+                <p className="form-error">{errors.task}</p>
               )}
             </div>
 
             <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="description" className="form-label">
                 Description *
               </label>
               <textarea
@@ -175,25 +169,20 @@ const CreateOfferForm: React.FC = () => {
                 value={formData.description}
                 onChange={handleInputChange}
                 placeholder="Describe what you're offering in detail..."
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.description ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`form-textarea ${errors.description ? 'border-red-300' : ''}`}
               />
               <div className="flex justify-between mt-1">
                 {errors.description && (
-                  <p className="text-red-500 text-xs">{errors.description}</p>
+                  <p className="form-error">{errors.description}</p>
                 )}
-                <p className="text-gray-400 text-xs">
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                   {formData.description.length}/500
                 </p>
               </div>
             </div>
 
             <div>
-              <label
-                htmlFor="valueType"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="valueType" className="form-label">
                 Value Type *
               </label>
               <select
@@ -201,9 +190,7 @@ const CreateOfferForm: React.FC = () => {
                 name="valueType"
                 value={formData.valueType}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.valueType ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`form-select ${errors.valueType ? 'border-red-300' : ''}`}
               >
                 <option value="service">Service</option>
                 <option value="skill">Skill</option>
@@ -211,15 +198,12 @@ const CreateOfferForm: React.FC = () => {
                 <option value="other">Other</option>
               </select>
               {errors.valueType && (
-                <p className="text-red-500 text-xs mt-1">{errors.valueType}</p>
+                <p className="form-error">{errors.valueType}</p>
               )}
             </div>
 
             <div>
-              <label
-                htmlFor="valueDetail"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="valueDetail" className="form-label">
                 Value Detail
               </label>
               <input
@@ -229,15 +213,12 @@ const CreateOfferForm: React.FC = () => {
                 value={formData.valueDetail}
                 onChange={handleInputChange}
                 placeholder="e.g., $50/hour, 2 hours of consultation, etc."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="assets"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="assets" className="form-label">
                 Assets (Optional)
               </label>
               <input
@@ -255,7 +236,7 @@ const CreateOfferForm: React.FC = () => {
                   }))
                 }
                 placeholder="List any relevant files, links, or resources (comma-separated)"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               />
             </div>
 
@@ -263,7 +244,8 @@ const CreateOfferForm: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transition-colors"
+                className="flex-1 py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transition-colors"
+                style={{ background: 'var(--info)', color: '#fff' }}
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -278,7 +260,8 @@ const CreateOfferForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/offers')}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                className="px-6 py-2 rounded-lg transition-colors"
+                style={{ border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
               >
                 Cancel
               </button>

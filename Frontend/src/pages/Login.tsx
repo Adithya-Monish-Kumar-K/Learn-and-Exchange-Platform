@@ -13,7 +13,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     if (apiClient.isAuthenticated()) {
-      navigate('/user/dashboard', { replace: true });
+      navigate('/dashboard', { replace: true });
     }
   }, [navigate]);
 
@@ -27,7 +27,7 @@ const Login: React.FC = () => {
     setLoading(true);
     try {
       await apiClient.login(form);
-      const redirect = params.get('redirect') || '/user/dashboard';
+      const redirect = params.get('redirect') || '/dashboard';
       navigate(redirect, { replace: true });
     } catch (error: any) {
       setErr(error?.response?.data?.message || 'Login failed');

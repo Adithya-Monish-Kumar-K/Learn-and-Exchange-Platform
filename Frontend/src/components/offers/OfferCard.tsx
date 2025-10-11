@@ -90,7 +90,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200">
+    <div className="rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-2">
@@ -102,16 +102,16 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete }) => {
             </span>
           </div>
           
-          <p className="text-gray-900 text-sm leading-relaxed mb-3">{offer.description}</p>
+          <p className="text-sm leading-relaxed mb-3" style={{ color: 'var(--text-primary)' }}>{offer.description}</p>
           
           {offer.valueDetail && (
-            <div className="flex items-center space-x-1 text-sm text-gray-600 mb-2">
+            <div className="flex items-center space-x-1 text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
               <Tag className="w-4 h-4" />
               <span>{offer.valueDetail}</span>
             </div>
           )}
 
-          <div className="flex items-center space-x-4 text-xs text-gray-500">
+          <div className="flex items-center space-x-4 text-xs" style={{ color: 'var(--text-muted)' }}>
             <div className="flex items-center space-x-1">
               <User className="w-3 h-3" />
               <span>Task: {typeof offer.task === 'string' ? offer.task : 'Unknown'}</span>
@@ -128,14 +128,16 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete }) => {
         <div className="flex space-x-2 ml-4">
           <button
             onClick={() => onEdit(offer._id!)}
-            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
             title="Edit offer"
           >
             <Edit className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(offer._id!)}
-            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-2 rounded-lg transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
             title="Delete offer"
           >
             <Trash2 className="w-4 h-4" />
@@ -144,13 +146,14 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, onEdit, onDelete }) => {
       </div>
 
       {offer.assets && offer.assets.length > 0 && (
-        <div className="border-t border-gray-100 pt-3">
-          <p className="text-xs text-gray-600 mb-1">Assets:</p>
+        <div className="pt-3" style={{ borderTop: '1px solid var(--card-border)' }}>
+          <p className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>Assets:</p>
           <div className="flex flex-wrap gap-1">
             {offer.assets.map((asset, index) => (
               <span
                 key={index}
-                className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                className="px-2 py-1 rounded text-xs"
+                style={{ background: 'var(--input-background)', color: 'var(--text-primary)' }}
               >
                 {asset}
               </span>

@@ -43,9 +43,10 @@ const TaskForm: React.FC<{
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="mb-8 bg-white p-6 rounded-lg shadow-sm"
+      className="mb-8 p-6 rounded-lg shadow-sm"
+      style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}
     >
-      <h3 className="text-xl font-semibold mb-4 text-sky-700">
+      <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
         Create New Task
       </h3>
 
@@ -69,9 +70,7 @@ const TaskForm: React.FC<{
           {...register('description', { required: 'Description is required' })}
         />
         {errors.description && (
-          <p className="text-sm text-red-500 mt-1">
-            {errors.description.message}
-          </p>
+          <p className="form-error">{errors.description.message}</p>
         )}
       </div>
 
@@ -84,9 +83,7 @@ const TaskForm: React.FC<{
             {...register('deadline', { required: 'Deadline required' })}
           />
           {errors.deadline && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.deadline.message}
-            </p>
+            <p className="form-error">{errors.deadline.message}</p>
           )}
         </div>
       </div>
@@ -94,7 +91,8 @@ const TaskForm: React.FC<{
       <div className="flex justify-end">
         <button
           type="submit"
-          className="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700"
+          className="px-4 py-2 rounded-md"
+          style={{ background: 'var(--info)', color: '#fff' }}
         >
           Create Task
         </button>

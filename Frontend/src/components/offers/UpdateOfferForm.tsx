@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Save } from 'lucide-react';
-import type { IOffer, ITask } from '../../types';
-import type { IUpdateOfferPayload } from '../../types/index';
+import type { IOffer, IUpdateOfferPayload } from '../../types';
+// Define minimal ITask locally for this form
+type ITask = { _id: string; title: string; category?: string; description?: string; createdBy?: string };
 import { getTasks } from '../../services/taskService';
 import offerService from '../../services/offerService';
 
@@ -29,6 +30,7 @@ const UpdateOfferForm: React.FC = () => {
     if (id) {
       fetchOfferAndTasks();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchOfferAndTasks = async () => {
@@ -118,13 +120,23 @@ const UpdateOfferForm: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await offerService.updateOffer(id!, formData);
+      const taskId = typeof formData.task === 'string' ? formData.task : formData.task?._id || '';
+      const payload: IUpdateOfferPayload = {
+        task: taskId,
+        description: formData.description,
+        valueType: formData.valueType,
+        valueDetail: formData.valueDetail,
+        assets: formData.assets,
+        status: formData.status,
+      };
+      const response = await offerService.updateOffer(id!, payload);
       toast.success(response.message || 'Offer updated successfully!');
       navigate('/offers');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating offer:', error);
-      const errorMessage =
-        error.message || 'Failed to update offer. Please try again.';
+      const errorMessage = (error && typeof error === 'object' && 'message' in error)
+        ? String((error as { message?: unknown }).message)
+        : 'Failed to update offer. Please try again.';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -147,42 +159,37 @@ const UpdateOfferForm: React.FC = () => {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading offer data...</p>
+          <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--info)', borderTopColor: 'transparent' }}></div>
+          <p style={{ color: 'var(--text-secondary)' }}>Loading offer data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8" style={{ background: 'var(--background)' }}>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="rounded-xl shadow-sm p-6" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Update Offer</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Update Offer</h1>
+            <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
               Modify your offer details below.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label
-                htmlFor="task"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="task" className="form-label">
                 Task *
               </label>
               <select
                 id="task"
                 name="task"
-                value={formData.task}
+                value={typeof formData.task === 'string' ? formData.task : formData.task?._id || ''}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.task ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`form-select ${errors.task ? 'border-red-300' : ''}`}
               >
                 <option value="">Select a task</option>
                 {tasks.map((task) => (
@@ -192,15 +199,12 @@ const UpdateOfferForm: React.FC = () => {
                 ))}
               </select>
               {errors.task && (
-                <p className="text-red-500 text-xs mt-1">{errors.task}</p>
+                <p className="form-error">{errors.task}</p>
               )}
             </div>
 
             <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="description" className="form-label">
                 Description *
               </label>
               <textarea
@@ -210,25 +214,20 @@ const UpdateOfferForm: React.FC = () => {
                 value={formData.description}
                 onChange={handleInputChange}
                 placeholder="Describe what you're offering in detail..."
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.description ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`form-textarea ${errors.description ? 'border-red-300' : ''}`}
               />
               <div className="flex justify-between mt-1">
                 {errors.description && (
-                  <p className="text-red-500 text-xs">{errors.description}</p>
+                  <p className="form-error">{errors.description}</p>
                 )}
-                <p className="text-gray-400 text-xs">
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                   {formData.description.length}/500
                 </p>
               </div>
             </div>
 
             <div>
-              <label
-                htmlFor="valueType"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="valueType" className="form-label">
                 Value Type *
               </label>
               <select
@@ -236,9 +235,7 @@ const UpdateOfferForm: React.FC = () => {
                 name="valueType"
                 value={formData.valueType}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.valueType ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`form-select ${errors.valueType ? 'border-red-300' : ''}`}
               >
                 <option value="service">Service</option>
                 <option value="skill">Skill</option>
@@ -246,15 +243,12 @@ const UpdateOfferForm: React.FC = () => {
                 <option value="other">Other</option>
               </select>
               {errors.valueType && (
-                <p className="text-red-500 text-xs mt-1">{errors.valueType}</p>
+                <p className="form-error">{errors.valueType}</p>
               )}
             </div>
 
             <div>
-              <label
-                htmlFor="valueDetail"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="valueDetail" className="form-label">
                 Value Detail
               </label>
               <input
@@ -264,15 +258,12 @@ const UpdateOfferForm: React.FC = () => {
                 value={formData.valueDetail || ''}
                 onChange={handleInputChange}
                 placeholder="e.g., $50/hour, 2 hours of consultation, etc."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="status"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="status" className="form-label">
                 Status
               </label>
               <select
@@ -280,7 +271,7 @@ const UpdateOfferForm: React.FC = () => {
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-select"
               >
                 <option value="pending">Pending</option>
                 <option value="accepted">Accepted</option>
@@ -290,10 +281,7 @@ const UpdateOfferForm: React.FC = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="assets"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="assets" className="form-label">
                 Assets (Optional)
               </label>
               <input
@@ -311,7 +299,7 @@ const UpdateOfferForm: React.FC = () => {
                   }))
                 }
                 placeholder="List any relevant files, links, or resources (comma-separated)"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               />
             </div>
 
@@ -319,7 +307,8 @@ const UpdateOfferForm: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transition-colors"
+                className="flex-1 py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transition-colors"
+                style={{ background: 'var(--info)', color: '#fff' }}
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -334,7 +323,8 @@ const UpdateOfferForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/offers')}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                className="px-6 py-2 rounded-lg transition-colors"
+                style={{ border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
               >
                 Cancel
               </button>

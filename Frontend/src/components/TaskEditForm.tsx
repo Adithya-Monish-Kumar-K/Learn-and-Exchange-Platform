@@ -4,8 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { updateTask } from '../services/taskService';
 
+interface TaskMinimal {
+  _id: string;
+  title: string;
+  description: string;
+  deadline?: string;
+  status?: 'Pending' | 'Assigned' | 'In Progress' | 'Completed' | 'Cancelled';
+}
+
 interface TaskEditFormProps {
-  task: any;
+  task: TaskMinimal;
   onTaskUpdated: () => void;
   onCancel: () => void;
 }
@@ -55,13 +63,14 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="bg-white p-6 rounded-lg shadow-sm"
+      className="p-6 rounded-lg shadow-sm"
+      style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}
     >
-      <h3 className="text-lg font-semibold mb-4 text-gray-800">Edit Task</h3>
+      <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Edit Task</h3>
 
       <div className="mb-4">
         <label className="form-label">Title</label>
-        <input className="form-input" {...register('title')} />
+  <input className="form-input" {...register('title')} />
         {errors.title?.message && (
           <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
         )}
@@ -69,7 +78,7 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
 
       <div className="mb-4">
         <label className="form-label">Description</label>
-        <textarea className="form-textarea" {...register('description')} />
+  <textarea className="form-textarea" {...register('description')} />
         {errors.description?.message && (
           <p className="text-sm text-red-500 mt-1">
             {errors.description.message}
@@ -98,14 +107,16 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
       <div className="flex justify-end gap-3">
         <button
           type="submit"
-          className="px-4 py-2 bg-sky-600 text-white rounded-md"
+          className="px-4 py-2 rounded-md"
+          style={{ background: 'var(--info)', color: 'white' }}
         >
           Save
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 border rounded-md"
+          className="px-4 py-2 rounded-md"
+          style={{ border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
         >
           Cancel
         </button>

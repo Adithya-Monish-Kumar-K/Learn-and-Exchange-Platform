@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Plus, Search, Filter } from 'lucide-react';
 import offerService from '../services/offerService';
-import OfferCard from '../components/Offers/OfferCard';
+import OfferCard from '../components/offers/OfferCard';
 
 interface IOffer {
   _id?: string;
@@ -75,12 +75,13 @@ const Offers: React.FC = () => {
 
   useEffect(() => {
     fetchOffers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchOffers = async () => {
     try {
       // Build query parameters
-      const params: any = {};
+  const params: Record<string, string> = {};
       if (statusFilter !== 'all') params.status = statusFilter;
       if (valueTypeFilter !== 'all') params.valueType = valueTypeFilter;
       if (searchTerm) params.search = searchTerm;
@@ -174,29 +175,30 @@ const Offers: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading offers...</p>
+          <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--info)', borderTopColor: 'transparent' }} />
+          <p style={{ color: 'var(--text-secondary)' }}>Loading offers...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Offers</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Offers</h1>
+            <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
               Manage your offers and connect with tasks in the community.
             </p>
           </div>
 
           <button
             onClick={() => navigate('/offers/create')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center space-x-2 transition-colors"
+            className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            style={{ background: 'var(--info)', color: '#fff' }}
           >
             <Plus className="w-4 h-4" />
             <span>Create Offer</span>
@@ -204,25 +206,25 @@ const Offers: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <div className="rounded-xl shadow-sm p-6 mb-8" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
                 placeholder="Search offers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 form-input"
               />
             </div>
 
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 form-select"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -233,11 +235,11 @@ const Offers: React.FC = () => {
             </div>
 
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
               <select
                 value={valueTypeFilter}
                 onChange={(e) => setValueTypeFilter(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 form-select"
               >
                 <option value="all">All Types</option>
                 <option value="service">Service</option>
@@ -251,21 +253,22 @@ const Offers: React.FC = () => {
 
         {/* Offers Grid */}
         {filteredOffers.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Plus className="w-8 h-8 text-gray-400" />
+          <div className="rounded-xl shadow-sm p-12 text-center" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--input-background)' }}>
+              <Plus className="w-8 h-8" style={{ color: 'var(--text-muted)' }} />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
               No offers found
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
               {searchTerm || statusFilter !== 'all' || valueTypeFilter !== 'all'
                 ? 'Try adjusting your search or filters'
                 : 'Get started by creating your first offer'}
             </p>
             <button
               onClick={() => navigate('/offers/create')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              className="px-6 py-2 rounded-lg transition-colors"
+              style={{ background: 'var(--info)', color: '#fff' }}
             >
               Create First Offer
             </button>
