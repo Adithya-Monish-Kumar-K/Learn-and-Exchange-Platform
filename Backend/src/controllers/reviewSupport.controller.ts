@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
-import { Review, SupportTicket, Task, User } from '../models/Review.model';
+import Review from '../models/Review.model';
+import Task from '../models/Task.model';
+import User from '../models/User.model';
+import { SupportTicket } from '../models/supportTicket.model';
 
 // Review CRUD
 export const getReviews = async (req: Request, res: Response) => {

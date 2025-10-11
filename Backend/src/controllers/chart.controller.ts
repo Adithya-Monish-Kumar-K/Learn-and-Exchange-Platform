@@ -12,8 +12,8 @@ export const getTaskCompletionTrend = async (req: Request, res: Response) => {
     const tasks = await Task.aggregate([
       {
         $match: {
-          status: 'completed',
-          completedAt: { $gte: sixMonthsAgo },
+          status: 'Completed',
+          updatedAt: { $gte: sixMonthsAgo },
         },
       },
       {
@@ -173,7 +173,7 @@ export const getReviewDistribution = async (req: Request, res: Response) => {
       ],
     };
 
-    reviews.forEach((review) => {
+    reviews.forEach((review: any) => {
       if (review._id >= 1 && review._id <= 5) {
         data.datasets[0].data[review._id - 1] = review.count;
       }
