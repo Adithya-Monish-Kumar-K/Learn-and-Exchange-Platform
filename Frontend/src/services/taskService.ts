@@ -35,3 +35,8 @@ export const updateTask = async (taskId: string, updates: any) => {
   const res = await axios.put(`${API_URL}/${taskId}`, updates);
   return res.data;
 };
+
+export const getTaskStats = async () => {
+  const res = await axios.get(`${API_URL}/stats/summary`);
+  return res.data; 
+};
