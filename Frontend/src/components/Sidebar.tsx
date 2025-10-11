@@ -12,6 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckSquare,
+  HelpCircle,
+  Star,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import apiClient from '../services/apiClient';
@@ -71,6 +73,19 @@ export default function ModernSidebar() {
       path: '/settings',
       label: 'Settings',
       icon: Settings,
+      divider: true,
+    },
+    {
+      id: 'reviews',
+      path: '/reviews',
+      label: 'Reviews',
+      icon: Star,
+    },
+    {
+      id: 'support',
+      path: '/support',
+      label: 'Support',
+      icon: HelpCircle,
       divider: true,
     },
   ];

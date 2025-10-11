@@ -361,7 +361,7 @@ export const getChatRequests = async (req: any, res: any) => {
       })
       .sort({ updatedAt: -1 });
 
-    const requests = chats.map((chat) => {
+    const requests = chats.map((chat: any) => {
       const otherParticipant = chat.participants.find(
         (p: any) => p._id.toString() !== userId.toString()
       );
@@ -448,8 +448,8 @@ export const respondToRequest = async (req: any, res: any) => {
     await chat.save();
 
     const otherParticipantId = chat.participants
-      .map((p) => p.toString())
-      .find((id) => id !== userId);
+      .map((p: any) => p.toString())
+      .find((id: any) => id !== userId);
     if (otherParticipantId) {
       const sockets = getReceiverSocketId(otherParticipantId);
       if (sockets && sockets.length) {

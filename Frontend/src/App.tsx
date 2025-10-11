@@ -1,6 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserProfileFormClass from './components/forms/UserProfileForm';
 import Chat from './components/Chat';
+import ReviewForm from './components/ReviewForm';
+import ReviewsList from './components/ReviewsList';
+import SupportForm from './components/SupportForm';
+import SupportTickets from './components/SupportTickets';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -67,6 +71,28 @@ function App() {
 
             {/* Tasks Routes */}
             <Route path="/tasks" element={<TaskList />} />
+
+            {/* Reviews Routes */}
+            <Route
+              path="/reviews"
+              element={
+                <div className="p-4">
+                  <ReviewForm />
+                  <ReviewsList />
+                </div>
+              }
+            />
+
+            {/* Support Routes */}
+            <Route
+              path="/support"
+              element={
+                <div className="p-4">
+                  <SupportForm />
+                  <SupportTickets />
+                </div>
+              }
+            />
           </Route>
         </Routes>
       </ThemeProvider>
