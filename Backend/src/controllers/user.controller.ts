@@ -122,6 +122,30 @@ export async function getMe(req: Request, res: Response) {
   }
 }
 
+export async function getUserById(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    const user = await User.findById(id).lean();
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.json(user);
+  } catch (error: unknown) {
+    console.log('Error fetching user by ID:', error);
+    return res.status(500).json({
+      message: 'Failed to fetch user',
+      error: extractErrorMessage(error),
+    });
+  }
+}
+
 export async function getUserByEmail(req: Request, res: Response) {
   try {
     const { email } = req.body as { email?: string };
@@ -130,7 +154,7 @@ export async function getUserByEmail(req: Request, res: Response) {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() }).lean();
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).lean();
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

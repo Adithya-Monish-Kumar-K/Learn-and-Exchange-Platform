@@ -293,7 +293,6 @@ class APIClient {
     this.user = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
-    localStorage.removeItem('isLoggedIn');
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
       this.refreshTimer = null;
@@ -537,6 +536,28 @@ class APIClient {
     });
   }
 
+  // User & Task Methods
+  async getUserDetails(userId: string) {
+    return this.exec('Get User Details', async () => {
+      const { data } = await this.client.get(`/users/id/${userId}`);
+      return data;
+    });
+  }
+
+  async getAllUsers() {
+    return this.exec('Get All Users', async () => {
+      const { data } = await this.client.get('/users');
+      return data;
+    });
+  }
+
+  async getAllTasks() {
+    return this.exec('Get All Tasks', async () => {
+      const { data } = await this.client.get('/tasks');
+      return data;
+    });
+  }
+
   // Stats API Methods
   async getAllStats() {
     return this.exec('Get All Stats', async () => {
@@ -576,18 +597,14 @@ class APIClient {
   // Chart API Methods
   async getTaskCompletionTrend() {
     return this.exec('Get Task Completion Trend', async () => {
-      const { data } = await this.client.get(
-        '/charts/task-completion-trend'
-      );
+      const { data } = await this.client.get('/charts/task-completion-trend');
       return data;
     });
   }
 
   async getUserRegistrationTrend() {
     return this.exec('Get User Registration Trend', async () => {
-      const { data } = await this.client.get(
-        '/charts/user-registration-trend'
-      );
+      const { data } = await this.client.get('/charts/user-registration-trend');
       return data;
     });
   }
@@ -599,10 +616,102 @@ class APIClient {
     });
   }
 
-  // Example placeholder
-  async getSidebarUsers() {
-    return this.exec('Get Sidebar Users', async () => {
-      const { data } = await this.client.get('/chat/sidebar');
+  // Chat API Methods
+  async getChatRequests() {
+    return this.exec('Get Chat Requests', async () => {
+      const user = this.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      console.log('Fetching chat requests for user:', user.email);
+
+      const { data } = await this.client.post(
+        '/chat/requests',
+        {
+          email: user.email,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      console.log('Chat Requests Data:', data);
+
+      return data.map((request: any) => ({
+        ...request,
+        _id: request._id,
+        userId: request.userId,
+      }));
+    });
+  }
+
+  async createChatRequest(requestData: {
+    receiverId: string;
+    task?: string;
+    title: string;
+    description: string;
+    senderId: string;
+  }) {
+    console.log('Create Request Body:', requestData);
+    return this.exec('Create Chat Request', async () => {
+      const { data } = await this.client.post(
+        '/chat/requests/add',
+        requestData
+      );
+      return data;
+    });
+  }
+
+  async respondToChatRequest(requestId: string, accepted: boolean) {
+    return this.exec('Respond to Chat Request', async () => {
+      const { data } = await this.client.post(
+        `/chat/requests/${requestId}/respond`,
+        {
+          action: accepted,
+          userId: this.user?.id,
+        }
+      );
+      return data;
+    });
+  }
+
+  async editChatRequest(
+    requestId: string,
+    requestData: {
+      title: string;
+      description: string;
+      task?: string;
+    }
+  ) {
+    return this.exec('Edit Chat Request', async () => {
+      const { data } = await this.client.put(
+        `/chat/requests/${requestId}`,
+        requestData
+      );
+      return data;
+    });
+  }
+
+  async deleteChatRequest(requestId: string) {
+    return this.exec('Delete Chat Request', async () => {
+      const { data } = await this.client.delete(`/chat/requests/${requestId}`);
+      return data;
+    });
+  }
+
+  async getChatHistory(userId: string) {
+    return this.exec('Get Chat History', async () => {
+      const { data } = await this.client.get(`/chat/messages/${userId}`);
+      return data;
+    });
+  }
+
+  async getOnlineUsers() {
+    return this.exec('Get Online Users', async () => {
+      const { data } = await this.client
+        .get('/chat/sidebar')
+        .then((res) => res.data);
       return data;
     });
   }

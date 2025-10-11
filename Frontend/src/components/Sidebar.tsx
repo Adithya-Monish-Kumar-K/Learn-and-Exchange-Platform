@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import apiClient from '../services/apiClient';
 
 type NavItem = {
   id: string;
@@ -35,7 +36,7 @@ type User = {
 export default function ModernSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const { isDark, toggleTheme } = useTheme();
 
   const navItems: NavItem[] = [
@@ -69,7 +70,7 @@ export default function ModernSidebar() {
     },
     {
       id: 'notifications',
-      path: '/user/profile',
+      path: '/profile',
       label: 'Profile',
       icon: User,
       badge: 2,
@@ -200,6 +201,7 @@ export default function ModernSidebar() {
           )}
         </button>
         <button
+          onClick={() => apiClient.logout()}
           style={{ color: 'var(--text-secondary)' }}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group hover:bg-opacity-10 hover:bg-slate-500"
         >

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserProfileFormClass from './components/forms/UserProfileForm';
+import Chat from './components/Chat';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -10,6 +11,7 @@ import Layout from './pages/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import SetPassword from './pages/SetPassword';
 import { ThemeProvider } from './contexts/ThemeContext';
+import apiClient from './services/apiClient';
 import About from './pages/About';
 import FeaturesPage from './pages/Features';
 import ContactPage from './pages/Contact';
@@ -41,19 +43,8 @@ function App() {
             <Route
               path="chat"
               element={
-                <div className="max-w-4xl mx-auto px-6 py-12">
-                  <h1
-                    className="text-2xl font-semibold"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
-                    Chat (Coming Soon)
-                  </h1>
-                  <p
-                    style={{ color: 'var(--text-secondary)' }}
-                    className="text-sm"
-                  >
-                    Realtime messaging module under construction.
-                  </p>
+                <div className="h-[calc(100vh-4rem)]">
+                  <Chat currentUser={apiClient.getUser()} />
                 </div>
               }
             />

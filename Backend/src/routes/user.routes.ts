@@ -11,7 +11,9 @@ import {
   uploadProfileImage,
   uploadResume,
   uploadCertifications,
+  getUserById
 } from '../controllers/user.controller';
+import User from '../models/User.model';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -42,16 +44,33 @@ const experienceSchema = z.object({
 });
 
 // Validation schema for PATCH by email (limited editable fields)
-const patchByEmailSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2).max(50).optional(),
-  phone: z.string().min(3).max(30).optional(),
-  bio: z.string().max(500).optional(),
-  links: z.array(z.string().url()).optional(),
-  skills: z.array(z.union([z.string().min(1), skillSchema])).optional(),
-  qualifications: z.array(qualificationSchema).optional(),
-  experience: z.array(z.union([z.string().min(1), experienceSchema])).optional(),
-}).strip(); // strip unknown keys silently to avoid front-end token injection noise
+const patchByEmailSchema = z
+  .object({
+    email: z.string().email(),
+    name: z.string().min(2).max(50).optional(),
+    phone: z.string().min(3).max(30).optional(),
+    bio: z.string().max(500).optional(),
+    links: z.array(z.string().url()).optional(),
+    skills: z.array(z.union([z.string().min(1), skillSchema])).optional(),
+    qualifications: z.array(qualificationSchema).optional(),
+    experience: z
+      .array(z.union([z.string().min(1), experienceSchema]))
+      .optional(),
+  })
+  .strip(); // strip unknown keys silently to avoid front-end token injection noise
+
+router.get('/', tokenValidator, async (req, res) => {
+  try {
+    const users = await User
+      .find({}, { name: 1, _id: 1 })
+      .lean()
+      .exec();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users' });
+  }
+});
 
 // Get current user profile
 router.get('/me', tokenValidator, getMe);
@@ -61,16 +80,35 @@ router.post('/email', tokenValidator, (req, res, next) => {
   const email = req.body.email;
   // Basic email pattern check to short-circuit obvious invalid cases
   const emailRegex = /^\S+@\S+\.\S+$/;
-  if (!emailRegex.test(email)) return res.status(400).json({ message: 'Invalid email format' });
+  if (!emailRegex.test(email))
+    return res.status(400).json({ message: 'Invalid email format' });
   return getUserByEmail(req, res);
 });
 
+// Get user by ID
+router.get('/id/:id', tokenValidator, getUserById);
+
 // Patch user profile by email (partial update)
-router.patch('/email', tokenValidator, validate(patchByEmailSchema), patchUserByEmail);
+router.patch(
+  '/email',
+  tokenValidator,
+  validate(patchByEmailSchema),
+  patchUserByEmail
+);
 
 // Uploads
-router.post('/me/profile-image', tokenValidator, upload.single('file'), uploadProfileImage);
+router.post(
+  '/me/profile-image',
+  tokenValidator,
+  upload.single('file'),
+  uploadProfileImage
+);
 router.post('/me/resume', tokenValidator, upload.single('file'), uploadResume);
-router.post('/me/certifications', tokenValidator, upload.array('files'), uploadCertifications);
+router.post(
+  '/me/certifications',
+  tokenValidator,
+  upload.array('files'),
+  uploadCertifications
+);
 
 export default router;

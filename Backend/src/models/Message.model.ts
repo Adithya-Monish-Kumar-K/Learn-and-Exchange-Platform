@@ -15,6 +15,11 @@ export interface IChat extends Document {
   taskId?: Types.ObjectId;
   offerId?: Types.ObjectId;
   messages: IMessage[];
+  title?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: Date;
+  senderId?: Types.ObjectId;  // For request type chats
+  receiverId?: Types.ObjectId;  // For request type chats
 }
 
 const messageSchema = new Schema<IMessage>(
@@ -31,13 +36,25 @@ const messageSchema = new Schema<IMessage>(
 
 const chatSchema = new Schema<IChat>(
   {
-    type: { type: String, enum: ['group', 'private'], default: 'private' },
+    type: {
+      type: String,
+      enum: ['group', 'private', 'request'],
+      default: 'private',
+    },
     participants: [
       { type: Schema.Types.ObjectId, ref: 'User', required: true },
     ],
     taskId: { type: Schema.Types.ObjectId, ref: 'Task' },
     offerId: { type: Schema.Types.ObjectId, ref: 'Offer' },
     messages: [messageSchema],
+    title: { type: String },
+    status: {
+      type: String,
+      enum: ['pending', 'accepted', 'rejected'],
+      default: 'pending',
+    },
+    senderId: { type: Schema.Types.ObjectId, ref: 'User' },  // For request type chats
+    receiverId: { type: Schema.Types.ObjectId, ref: 'User' }, // For request type chats
   },
   { timestamps: true }
 );
