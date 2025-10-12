@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Target, Award, Briefcase, ArrowLeft, Menu, X } from 'lucide-react';
+import { Users, Target, Award, Briefcase, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const About: React.FC = () => {

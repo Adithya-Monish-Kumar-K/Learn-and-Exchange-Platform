@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Save, Download, RotateCcw } from 'lucide-react';
+import { Save, RotateCcw } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import apiClient from '../services/apiClient';
 import { toast } from 'react-hot-toast';
