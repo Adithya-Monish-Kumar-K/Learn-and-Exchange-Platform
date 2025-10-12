@@ -14,7 +14,8 @@ interface TaskFormData {
 const TaskForm: React.FC<{
   onTaskCreated: () => void;
   userId: string; // Add userId prop
-}> = ({ onTaskCreated, userId }) => {
+  onCancel?: () => void;
+}> = ({ onTaskCreated, userId, onCancel }) => {
   const {
     register,
     handleSubmit,
@@ -44,11 +45,32 @@ const TaskForm: React.FC<{
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="mb-8 p-6 rounded-lg shadow-sm"
-      style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}
+      style={{
+        background: 'var(--card-background)',
+        border: '1px solid var(--card-border)',
+      }}
     >
-      <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-        Create New Task
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3
+          className="text-xl font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          Create New Task
+        </h3>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3 py-1 rounded-md text-sm"
+            style={{
+              border: '1px solid var(--card-border)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
 
       <div className="mb-4">
         <label className="form-label">Title</label>

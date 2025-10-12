@@ -19,7 +19,7 @@ export const getUsersForSidebar = async (req: any, res: any) => {
       })
       .sort({ updatedAt: -1 });
 
-  const sidebar = chats.map((chat: any) => {
+    const sidebar = chats.map((chat: any) => {
       const otherParticipants = (chat.participants as any[]).filter(
         (p: any) => p._id.toString() !== loggedInUserId.toString()
       );
@@ -45,7 +45,7 @@ export const getUsersForSidebar = async (req: any, res: any) => {
 export const getMessages = async (req: any, res: any) => {
   try {
     const paramId = req.params.id;
-    const myId = req.user._id as string;
+    const myId = req.auth?.userid as string;
 
     let chat;
 
@@ -70,8 +70,10 @@ export const getMessages = async (req: any, res: any) => {
       });
     }
 
+    console.log(chat);
+
     if (!chat) {
-      return res.status(200).json({ messages: [] });
+      return res.status(200).json({ chatId: null, messages: [] });
     }
 
     res.status(200).json(chat);
@@ -85,7 +87,7 @@ export const sendMessage = async (req: any, res: any) => {
   try {
     const { type = 'private', text, image } = req.body;
     const paramId = req.params.id;
-    const senderId = req.user._id as string;
+    const senderId = req.auth.userid as string;
 
     const mediaIds: Types.ObjectId[] = [];
 
@@ -147,6 +149,12 @@ export const sendMessage = async (req: any, res: any) => {
       return res.status(400).json({ message: 'Invalid id' });
     }
 
+    // Get the actual saved message with generated _id
+    const savedMessage =
+      updatedChat && Array.isArray(updatedChat.messages)
+        ? updatedChat.messages[updatedChat.messages.length - 1]
+        : null;
+
     const receivers = (updatedChat.participants as any[])
       .map((p: any) => p.toString())
       .filter((id) => id !== senderId);
@@ -156,7 +164,7 @@ export const sendMessage = async (req: any, res: any) => {
         for (const socketId of sockets) {
           io.to(socketId).emit('newMessage', {
             chatId: updatedChat._id,
-            message: newMessage,
+            message: savedMessage || newMessage,
           });
         }
       }
@@ -173,7 +181,7 @@ export const editMessage = async (req: any, res: any) => {
   try {
     const { chatId, messageId } = req.params;
     const { text } = req.body;
-    const userId = req.user._id as string;
+    const userId = req.auth.userid as string;
 
     if (!Types.ObjectId.isValid(chatId) || !Types.ObjectId.isValid(messageId)) {
       return res.status(400).json({ message: 'Invalid id' });
@@ -227,7 +235,7 @@ export const editMessage = async (req: any, res: any) => {
 export const deleteMessage = async (req: any, res: any) => {
   try {
     const { chatId, messageId } = req.params;
-    const userId = req.user._id as string;
+    const userId = req.auth.userid as string;
 
     if (!Types.ObjectId.isValid(chatId) || !Types.ObjectId.isValid(messageId)) {
       return res.status(400).json({ message: 'Invalid id' });
@@ -285,7 +293,7 @@ export const deleteMessage = async (req: any, res: any) => {
 export const searchChats = async (req: any, res: any) => {
   try {
     const q = (req.query.q as string) || '';
-    const userId = req.user._id as string;
+    const userId = req.auth.userid as string;
     if (!q) return res.status(200).json([]);
 
     const regex = new RegExp(q, 'i');
@@ -365,6 +373,7 @@ export const getChatRequests = async (req: any, res: any) => {
       const otherParticipant = chat.participants.find(
         (p: any) => p._id.toString() !== userId.toString()
       );
+      console.log(chat);
       return {
         _id: chat._id,
         title: chat.title || 'Chat Request',
@@ -373,7 +382,7 @@ export const getChatRequests = async (req: any, res: any) => {
         createdAt: chat.createdAt,
         userId: otherParticipant?._id,
         senderId: chat.senderId,
-        receiverId: chat.receiverId
+        receiverId: chat.receiverId,
       };
     });
 
@@ -433,8 +442,15 @@ export const respondToRequest = async (req: any, res: any) => {
     const { chatId } = req.params;
     const { action, userId } = req.body; // 'accept' or 'reject'
 
-    console.log('Respond to Request - chatId:', chatId, 'action:', action, 'userId:', userId);
-    
+    console.log(
+      'Respond to Request - chatId:',
+      chatId,
+      'action:',
+      action,
+      'userId:',
+      userId
+    );
+
     if (!Types.ObjectId.isValid(chatId))
       return res.status(400).json({ message: 'Invalid chat id' });
     const chat = await Message.findById(chatId);

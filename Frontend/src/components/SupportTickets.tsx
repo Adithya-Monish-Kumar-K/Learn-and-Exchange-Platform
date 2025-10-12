@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Download } from 'lucide-react';
 
 interface SupportTicket {
   _id: string;
-  subject: string;
-  description: string;
-  status: 'open' | 'in-progress' | 'resolved' | 'closed';
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
+  requestType: string;
+  request: string;
+  requestBy: string;
+  status?: string; // default 'Pending' per backend
+  media?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const SupportTickets: React.FC = () => {
@@ -19,7 +21,7 @@ const SupportTickets: React.FC = () => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const res = await axios.get('/api/tickets');
+        const res = await axios.get('http://localhost:3000/api/tickets');
         // Ensure res.data is an array, otherwise use empty array
         const ticketsData = Array.isArray(res.data) ? res.data : [];
         setTickets(ticketsData);
@@ -34,14 +36,51 @@ const SupportTickets: React.FC = () => {
       }
     };
     fetchTickets();
+
+    const onRefresh = () => {
+      setLoading(true);
+      fetchTickets();
+    };
+    window.addEventListener('support:tickets:refresh', onRefresh);
+    return () =>
+      window.removeEventListener('support:tickets:refresh', onRefresh);
   }, []);
+
+  const downloadJson = (data: unknown, filename = 'support-tickets.json') => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
   if (loading) return <div>Loading tickets...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-semibold mb-4">Support Tickets</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-semibold">Support Tickets</h2>
+        <button
+          onClick={() =>
+            downloadJson({
+              exportedAt: new Date().toISOString(),
+              count: tickets.length,
+              data: tickets,
+            })
+          }
+          className="px-3 py-2 rounded-lg text-sm flex items-center gap-2 border"
+        >
+          <Download className="w-4 h-4" />
+          Download Tickets
+        </button>
+      </div>
       {tickets.length === 0 ? (
         <p className="text-gray-500">No support tickets yet</p>
       ) : (
@@ -53,24 +92,20 @@ const SupportTickets: React.FC = () => {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium mb-2">{ticket.subject}</h3>
+                  <h3 className="text-lg font-medium mb-2">
+                    {ticket.requestType}
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-2 line-clamp-2">
-                    {ticket.description}
+                    {ticket.request}
                   </p>
                   <div className="flex items-center gap-4 text-sm">
-                    <span className="text-gray-500">
-                      {new Date(ticket.createdAt).toLocaleDateString()}
-                    </span>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${ticket.status === 'open' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : ''}
-                      ${ticket.status === 'in-progress' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : ''}
-                      ${ticket.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''}
-                      ${ticket.status === 'closed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : ''}
-                    `}
-                    >
-                      {ticket.status.charAt(0).toUpperCase() +
-                        ticket.status.slice(1)}
+                    {ticket.createdAt && (
+                      <span className="text-gray-500">
+                        {new Date(ticket.createdAt).toLocaleDateString()}
+                      </span>
+                    )}
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                      {ticket.status || 'Pending'}
                     </span>
                   </div>
                 </div>

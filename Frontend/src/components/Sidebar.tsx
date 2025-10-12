@@ -103,7 +103,7 @@ export default function ModernSidebar() {
       }}
       className={`${
         isCollapsed ? 'w-20' : 'w-80'
-      } fixed top-0 left-0 h-screen flex flex-col shadow-lg transition-all duration-300`}
+      } fixed top-0 left-0 h-screen flex flex-col shadow-lg transition-all duration-300 z-10`}
     >
       {/* Header */}
       <div
@@ -207,7 +207,7 @@ export default function ModernSidebar() {
           )}
         </button>
         <button
-          onClick={() => apiClient.logout()}
+          onClick={() => { apiClient.logout(); navigate('/'); }}
           style={{ color: 'var(--text-secondary)' }}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group hover:bg-opacity-10 hover:bg-slate-500"
         >

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Download } from 'lucide-react';
 import offerService from '../services/offerService';
 import OfferCard from '../components/offers/OfferCard';
 
@@ -73,6 +73,26 @@ const Offers: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [valueTypeFilter, setValueTypeFilter] = useState('all');
 
+  // Helper to download JSON data as a file
+  const downloadJson = (data: unknown, filename = 'offers.json') => {
+    try {
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Failed to download JSON:', e);
+      toast.error('Failed to download offers');
+    }
+  };
+
   useEffect(() => {
     fetchOffers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -81,7 +101,7 @@ const Offers: React.FC = () => {
   const fetchOffers = async () => {
     try {
       // Build query parameters
-  const params: Record<string, string> = {};
+      const params: Record<string, string> = {};
       if (statusFilter !== 'all') params.status = statusFilter;
       if (valueTypeFilter !== 'all') params.valueType = valueTypeFilter;
       if (searchTerm) params.search = searchTerm;
@@ -173,11 +193,34 @@ const Offers: React.FC = () => {
     return matchesSearch && matchesStatus && matchesValueType;
   });
 
+  const handleDownload = () => {
+    const data = filteredOffers.length > 0 ? filteredOffers : offers;
+    downloadJson(
+      {
+        exportedAt: new Date().toISOString(),
+        count: data.length,
+        filters: { searchTerm, statusFilter, valueTypeFilter },
+        data,
+      },
+      'offers.json'
+    );
+    toast.success('Offers downloaded');
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: 'var(--background)' }}
+      >
         <div className="text-center">
-          <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--info)', borderTopColor: 'transparent' }} />
+          <div
+            className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-4"
+            style={{
+              borderColor: 'var(--info)',
+              borderTopColor: 'transparent',
+            }}
+          />
           <p style={{ color: 'var(--text-secondary)' }}>Loading offers...</p>
         </div>
       </div>
@@ -189,27 +232,55 @@ const Offers: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Offers</h1>
+            <h1
+              className="text-3xl font-bold"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              Offers
+            </h1>
             <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
               Manage your offers and connect with tasks in the community.
             </p>
           </div>
 
-          <button
-            onClick={() => navigate('/offers/create')}
-            className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-            style={{ background: 'var(--info)', color: '#fff' }}
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Offer</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleDownload}
+              className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              style={{
+                border: '1px solid var(--card-border)',
+                background: 'var(--card-background)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <Download className="w-4 h-4" />
+              <span>Download Offers</span>
+            </button>
+            <button
+              onClick={() => navigate('/offers/create')}
+              className="px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              style={{ background: 'var(--info)', color: '#fff' }}
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Offer</span>
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="rounded-xl shadow-sm p-6 mb-8" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
+        <div
+          className="rounded-xl shadow-sm p-6 mb-8"
+          style={{
+            background: 'var(--card-background)',
+            border: '1px solid var(--card-border)',
+          }}
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4"
+                style={{ color: 'var(--text-muted)' }}
+              />
               <input
                 type="text"
                 placeholder="Search offers..."
@@ -220,7 +291,10 @@ const Offers: React.FC = () => {
             </div>
 
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+              <Filter
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4"
+                style={{ color: 'var(--text-muted)' }}
+              />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -235,7 +309,10 @@ const Offers: React.FC = () => {
             </div>
 
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+              <Filter
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4"
+                style={{ color: 'var(--text-muted)' }}
+              />
               <select
                 value={valueTypeFilter}
                 onChange={(e) => setValueTypeFilter(e.target.value)}
@@ -253,11 +330,26 @@ const Offers: React.FC = () => {
 
         {/* Offers Grid */}
         {filteredOffers.length === 0 ? (
-          <div className="rounded-xl shadow-sm p-12 text-center" style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}>
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--input-background)' }}>
-              <Plus className="w-8 h-8" style={{ color: 'var(--text-muted)' }} />
+          <div
+            className="rounded-xl shadow-sm p-12 text-center"
+            style={{
+              background: 'var(--card-background)',
+              border: '1px solid var(--card-border)',
+            }}
+          >
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'var(--input-background)' }}
+            >
+              <Plus
+                className="w-8 h-8"
+                style={{ color: 'var(--text-muted)' }}
+              />
             </div>
-            <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
+            <h3
+              className="text-lg font-medium mb-2"
+              style={{ color: 'var(--text-primary)' }}
+            >
               No offers found
             </h3>
             <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>

@@ -31,7 +31,7 @@ const messageSchema = new Schema<IMessage>(
     isEdited: { type: Boolean, default: false },
     media: [{ type: Schema.Types.ObjectId, ref: 'Asset' }],
   },
-  { _id: false, timestamps: true }
+  { timestamps: true }
 );
 
 const chatSchema = new Schema<IChat>(

@@ -48,7 +48,7 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
       title: task.title,
       description: task.description,
       deadline: task.deadline ? task.deadline.split('T')[0] : '',
-      status: (task.status as FormData['status']) || 'open',
+      status: (task.status as FormData['status']) || 'Pending',
     },
   });
 
@@ -64,13 +64,34 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="p-6 rounded-lg shadow-sm"
-      style={{ background: 'var(--card-background)', border: '1px solid var(--card-border)' }}
+      style={{
+        background: 'var(--card-background)',
+        border: '1px solid var(--card-border)',
+      }}
     >
-      <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Edit Task</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3
+          className="text-lg font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          Edit Task
+        </h3>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-3 py-1 rounded-md text-sm"
+          style={{
+            border: '1px solid var(--card-border)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          Close
+        </button>
+      </div>
 
       <div className="mb-4">
         <label className="form-label">Title</label>
-  <input className="form-input" {...register('title')} />
+        <input className="form-input" {...register('title')} />
         {errors.title?.message && (
           <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
         )}
@@ -78,7 +99,7 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
 
       <div className="mb-4">
         <label className="form-label">Description</label>
-  <textarea className="form-textarea" {...register('description')} />
+        <textarea className="form-textarea" {...register('description')} />
         {errors.description?.message && (
           <p className="text-sm text-red-500 mt-1">
             {errors.description.message}
@@ -90,17 +111,6 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
         <div>
           <label className="form-label">Deadline</label>
           <input type="date" className="form-input" {...register('deadline')} />
-        </div>
-
-        <div>
-          <label className="form-label">Status</label>
-          <select className="form-select" {...register('status')}>
-            <option value="Pending">Pending</option>
-            <option value="Assigned">Assigned</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
         </div>
       </div>
 
@@ -116,7 +126,10 @@ const TaskEditForm: React.FC<TaskEditFormProps> = ({
           type="button"
           onClick={onCancel}
           className="px-4 py-2 rounded-md"
-          style={{ border: '1px solid var(--card-border)', color: 'var(--text-primary)' }}
+          style={{
+            border: '1px solid var(--card-border)',
+            color: 'var(--text-primary)',
+          }}
         >
           Cancel
         </button>

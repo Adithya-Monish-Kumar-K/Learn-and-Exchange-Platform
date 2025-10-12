@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserProfileFormClass from './components/forms/UserProfileForm';
-import Chat from './components/Chat';
+import Chat, { type User } from './components/Chat';
 import ReviewForm from './components/ReviewForm';
 import ReviewsList from './components/ReviewsList';
 import SupportForm from './components/SupportForm';
@@ -23,6 +23,7 @@ import ContactPage from './pages/Contact';
 import Offers from './pages/offers';
 import CreateOfferForm from './components/offers/CreateOfferForm';
 import UpdateOfferForm from './components/offers/UpdateOfferForm';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -59,7 +60,11 @@ function App() {
               path="/chat"
               element={
                 <div className="h-[calc(100vh-4rem)]">
-                  <Chat currentUser={apiClient.getUser()} />
+                  {apiClient.getUser() ? (
+                    <Chat currentUser={apiClient.getUser() as User} />
+                  ) : (
+                    <div>User not found. Please log in.</div>
+                  )}
                 </div>
               }
             />
@@ -93,6 +98,9 @@ function App() {
                 </div>
               }
             />
+
+            {/* Settings */}
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>
       </ThemeProvider>

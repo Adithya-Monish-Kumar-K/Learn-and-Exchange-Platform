@@ -3,10 +3,9 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosError,
 } from 'axios';
-import { removeItem } from 'framer-motion';
 
 interface StoredUser {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role?: string;
@@ -367,7 +366,7 @@ class APIClient {
   // 2. Verify register token (email link)
   async verifyRegisterToken(token: string) {
     console.log(token);
-    
+
     return this.exec('Verify Register Token', async () => {
       const { data } = await this.client.get('/auth/verify-token-register', {
         headers: { Authorization: `Bearer ${token}` },
@@ -531,7 +530,7 @@ class APIClient {
       // If the backend responds with updated user, optionally refresh local stored user basics
       if (data?.email && this.user && this.user.email === data.email) {
         const nextUser: StoredUser = {
-          _id: data._id || this.user._id,
+          id: data.id || this.user.id,
           name: data.name || this.user.name,
           email: data.email,
           role: data.role || this.user.role,
@@ -662,24 +661,21 @@ class APIClient {
   }) {
     console.log('Create Request Body:', requestData);
     return this.exec('Create Chat Request', async () => {
-      const { data } = await this.client.post(
-        '/chat/requests/add',
-        requestData
-      );
-      return data;
+      const res = await this.client.post('/chat/requests/add', requestData);
+      return res.data;
     });
   }
 
   async respondToChatRequest(requestId: string, accepted: boolean) {
     return this.exec('Respond to Chat Request', async () => {
-      const { data } = await this.client.post(
+      const res = await this.client.post(
         `/chat/requests/${requestId}/respond`,
         {
           action: accepted,
           userId: this.user?.id,
         }
       );
-      return data;
+      return res.data;
     });
   }
 
@@ -694,34 +690,114 @@ class APIClient {
     }
   ) {
     return this.exec('Edit Chat Request', async () => {
-      const { data } = await this.client.put(
+      const res = await this.client.put(
         `/chat/requests/${requestId}`,
         requestData
       );
-      return data;
+      return res.data;
     });
   }
 
   async deleteChatRequest(requestId: string) {
     return this.exec('Delete Chat Request', async () => {
-      const { data } = await this.client.delete(`/chat/requests/${requestId}`);
-      return data;
+      const res = await this.client.delete(`/chat/requests/${requestId}`);
+      return res.data;
     });
   }
 
-  async getChatHistory(userId: string) {
+  // Accepts either userId (peer id) or chatId (24-char hex)
+  async getChatHistory(id: string) {
     return this.exec('Get Chat History', async () => {
-      const { data } = await this.client.get(`/chat/messages/${userId}`);
-      return data;
+      const res = await this.client.get(`/chat/messages/${id}`);
+      const payload = res.data;
+      if (payload && Array.isArray(payload.messages)) {
+        const msgs = (payload.messages as any[]).map((m: any) => ({
+          _id: m._id,
+          senderId:
+            typeof m.senderId === 'string' ? m.senderId : m.senderId?._id,
+          receiverId:
+            typeof m.receiverId === 'string' ? m.receiverId : m.receiverId?._id,
+          text: m.text || '',
+          createdAt: m.createdAt || new Date().toISOString(),
+          updatedAt: m.updatedAt || m.createdAt || new Date().toISOString(),
+          isEdited: !!m.isEdited,
+        }));
+        // attach chatId on the array object for the component to pick up
+        (msgs as any)._chatId = payload._id || payload.chatId || null;
+        return msgs;
+      }
+      // If API returns a chat doc directly
+      if (payload && Array.isArray(payload)) {
+        return payload.map((m: any) => ({
+          _id: m._id,
+          senderId:
+            typeof m.senderId === 'string' ? m.senderId : m.senderId?._id,
+          receiverId:
+            typeof m.receiverId === 'string' ? m.receiverId : m.receiverId?._id,
+          text: m.text || '',
+          createdAt: m.createdAt || new Date().toISOString(),
+          updatedAt: m.updatedAt || m.createdAt || new Date().toISOString(),
+          isEdited: !!m.isEdited,
+        }));
+      }
+      return [];
     });
   }
 
   async getOnlineUsers() {
     return this.exec('Get Online Users', async () => {
-      const { data } = await this.client
-        .get('/chat/sidebar')
-        .then((res) => res.data);
-      return data;
+      const res = await this.client.get('/chat/sidebar');
+      return res.data;
+    });
+  }
+
+  async sendMessage(
+    targetId: string,
+    payload: { text?: string; image?: string[] }
+  ) {
+    return this.exec('Send Message', async () => {
+      // targetId can be chatId or userId; backend expects an id (ObjectId)
+      const res = await this.client.post(`/chat/send/${targetId}`, payload);
+      const chat = res.data;
+      // pick the last message from updated chat, ensure it has a valid _id
+      const last = Array.isArray(chat?.messages)
+        ? chat.messages[chat.messages.length - 1]
+        : null;
+      if (!last) return null;
+      return {
+        _id: last._id,
+        senderId:
+          typeof last.senderId === 'string'
+            ? last.senderId
+            : last.senderId?._id,
+        receiverId:
+          typeof last.receiverId === 'string'
+            ? last.receiverId
+            : last.receiverId?._id,
+        text: last.text || '',
+        createdAt: last.createdAt || new Date().toISOString(),
+        updatedAt: last.updatedAt || last.createdAt || new Date().toISOString(),
+        isEdited: !!last.isEdited,
+      } as any;
+    });
+  }
+
+  async editMessage(chatId: string, messageId: string, text: string) {
+    return this.exec('Edit Message', async () => {
+      const res = await this.client.put(
+        `/chat/messages/${chatId}/${messageId}`,
+        { text }
+      );
+      return res.data;
+    });
+  }
+
+  async deleteMessage(chatId: string, messageId: string) {
+    return this.exec('Delete Message', async () => {
+      const res = await this.client.delete(
+        `/chat/messages/${chatId}/${messageId}`
+      );
+      return res.data;
     });
   }
 }

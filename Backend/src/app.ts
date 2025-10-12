@@ -1,26 +1,27 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import { connectToDb, getDb } from "./config/db";
-import authRoutes from "./routes/auth.routes";
-import chatRoutes from "./routes/chat.routes";
-import reviewSupportRoutes from "./routes/reviewSupport.routes";
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import { connectToDb, getDb } from './config/db';
+import authRoutes from './routes/auth.routes';
+import chatRoutes from './routes/chat.routes';
+import reviewSupportRoutes from './routes/reviewSupport.routes';
 import userRoutes from './routes/user.routes';
 import statRoutes from './routes/stats.routes';
 import chartRoutes from './routes/chart.routes';
 import taskRoutes from './routes/Task.routes';
+import offerRoutes from './routes/offer.routes';
 import { app, server } from './config/socket';
 
 dotenv.config();
 
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3000;
 
 app.use(
   cors({
-    origin: process.env.STATIC_URL || 'http://localhost:5173',
+    origin: true,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
@@ -31,6 +32,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/offers', offerRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api', reviewSupportRoutes);
 app.use('/api/stats', statRoutes);

@@ -108,7 +108,7 @@
     /* Text colors */
     --text-primary: #111827;
     --text-secondary: #4b5563;
-    --text-muted: #6b7280;
+    --text-muted: #ffffff;
 
     /* Chart colors */
     --chart-blue: #3b82f6;
@@ -128,7 +128,7 @@
     --sidebar: #ffffff;
     --sidebar-foreground: #111827;
     --sidebar-border: #e5e7eb;
-    --sidebar-muted: #6b7280;
+    --sidebar-muted: #698dd3;
 
     /* Form field colors */
     --input-background: #f3f4f6;
@@ -231,7 +231,7 @@
     /* Text colors */
     --text-primary: #f9fafb;
     --text-secondary: #e5e7eb;
-    --text-muted: #9ca3af;
+    --text-muted: #ffffff;
 
     /* Chart colors */
     --chart-blue: #60a5fa;

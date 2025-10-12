@@ -9,7 +9,7 @@ const io = new Server(server, {
   cors: {
     origin: process.env.STATIC_URL || 'http://localhost:5173',
     credentials: true,
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   },
   allowEIO3: true,
   transports: ['polling', 'websocket'],

@@ -173,6 +173,7 @@ export async function getUserByEmail(req: Request, res: Response) {
 // New: patch user profile fields by email (partial update)
 export async function patchUserByEmail(req: Request, res: Response) {
   try {
+    console.log(req.body);
     const { email, name, phone, bio, links, skills, qualifications, experience } = req.body || {};
     if (typeof email !== 'string' || !email.trim()) {
       return res.status(400).json({ message: 'Email is required for update' });
@@ -230,7 +231,7 @@ export async function uploadProfileImage(req: Request, res: Response) {
     });
 
     const user = await populateUserQuery(
-      User.findByIdAndUpdate(userId, { profileImage: asset._id }, { new: true, runValidators: true })
+      User.findByIdAndUpdate(userId, { profileImage: asset.id }, { new: true, runValidators: true })
     ).lean();
     return res.json(user);
   } catch (error: unknown) {
@@ -254,7 +255,7 @@ export async function uploadResume(req: Request, res: Response) {
     });
 
     const user = await populateUserQuery(
-      User.findByIdAndUpdate(userId, { resume: asset._id }, { new: true, runValidators: true })
+      User.findByIdAndUpdate(userId, { resume: asset.id }, { new: true, runValidators: true })
     ).lean();
     return res.json(user);
   } catch (error: unknown) {
@@ -284,7 +285,7 @@ export async function uploadCertifications(req: Request, res: Response) {
     const user = await populateUserQuery(
       User.findByIdAndUpdate(
         userId,
-        { $push: { certifications: { $each: assets.map((a) => a._id) } } },
+        { $push: { certifications: { $each: assets.map((a) => a.id) } } },
         { new: true, runValidators: true }
       )
     ).lean();

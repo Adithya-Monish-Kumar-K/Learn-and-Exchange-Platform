@@ -20,7 +20,7 @@ export const createTask = async (req: Request, res: Response) => {
       requirements: requirements || [],
       attachments: attachments || [],
       offer: offer || [],
-      status: "Pending",
+      status: "open",
       applicants: [],
       createdAt: new Date(),
       updatedAt: new Date(),

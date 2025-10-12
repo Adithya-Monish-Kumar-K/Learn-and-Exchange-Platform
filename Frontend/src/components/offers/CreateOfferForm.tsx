@@ -7,6 +7,7 @@ import type { ICreateOfferPayload } from '../../types';
 type ITask = { _id: string; title: string; category?: string; description?: string; createdBy?: string };
 import { getTasks } from '../../services/taskService';
 import offerService from '../../services/offerService';
+import { apiClient } from '../../services';
 
 const CreateOfferForm: React.FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const CreateOfferForm: React.FC = () => {
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [formData, setFormData] = useState<ICreateOfferPayload>({
     task: '',
-    offeredBy: 'current-user-id', // In real app, get from auth context
+    offeredBy: apiClient.getUser()?.id || "",
     description: '',
     valueType: 'service',
     valueDetail: '',

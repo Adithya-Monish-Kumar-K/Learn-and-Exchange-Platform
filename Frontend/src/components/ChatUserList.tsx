@@ -53,7 +53,7 @@ const ChatUserList: React.FC<ChatUserListProps> = ({
             </button>
           </div>
         </div>
-        <div className="relative">
+        <div className="relative ">
           <input
             type="text"
             placeholder="Search users..."

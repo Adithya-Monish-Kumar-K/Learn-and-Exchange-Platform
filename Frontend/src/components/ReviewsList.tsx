@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Download } from 'lucide-react';
 
 interface Review {
   _id: string;
-  content: string;
+  reviewer: string | { _id: string; name?: string };
+  reviewee: string | { _id: string; name?: string };
+  task?: string;
+  title?: string;
   rating: number;
+  comment: string;
   createdAt?: string;
-  userId?: string;
 }
 
 const ReviewsList: React.FC = () => {
@@ -17,7 +21,7 @@ const ReviewsList: React.FC = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await axios.get('/api/reviews');
+        const res = await axios.get('http://localhost:3000/api/reviews');
         // Ensure res.data is an array, otherwise use empty array
         const reviewsData = Array.isArray(res.data) ? res.data : [];
         setReviews(reviewsData);
@@ -32,14 +36,50 @@ const ReviewsList: React.FC = () => {
       }
     };
     fetchReviews();
+
+    const onRefresh = () => {
+      setLoading(true);
+      fetchReviews();
+    };
+    window.addEventListener('reviews:refresh', onRefresh);
+    return () => window.removeEventListener('reviews:refresh', onRefresh);
   }, []);
+
+  const downloadJson = (data: unknown, filename = 'reviews.json') => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
   if (loading) return <div>Loading reviews...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-semibold mb-4">Reviews</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-semibold">Reviews</h2>
+        <button
+          onClick={() =>
+            downloadJson({
+              exportedAt: new Date().toISOString(),
+              count: reviews.length,
+              data: reviews,
+            })
+          }
+          className="px-3 py-2 rounded-lg text-sm flex items-center gap-2 border"
+        >
+          <Download className="w-4 h-4" />
+          Download Reviews
+        </button>
+      </div>
       {reviews.length === 0 ? (
         <p className="text-gray-500">No reviews yet</p>
       ) : (
@@ -51,7 +91,10 @@ const ReviewsList: React.FC = () => {
             >
               <div className="flex items-center mb-2">
                 <div className="flex-1">
-                  <p className="text-lg">{review.content}</p>
+                  {review.title && (
+                    <p className="text-base font-medium mb-1">{review.title}</p>
+                  )}
+                  <p className="text-lg">{review.comment}</p>
                   <div className="flex items-center mt-2">
                     <div className="flex">
                       {[...Array(5)].map((_, index) => (
