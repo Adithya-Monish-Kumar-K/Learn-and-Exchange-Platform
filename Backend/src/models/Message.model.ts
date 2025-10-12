@@ -1,47 +1,64 @@
-import { Schema, model, Types, Document } from 'mongoose';
+import mongoose, { Schema, model, Types, Document } from 'mongoose';
 
 export interface IMessage {
   senderId: Types.ObjectId;
   text: string;
-  timestamp: Date;
+  type: string;
+  readBy: Types.ObjectId[];
+  isEdited: boolean;
+  media: Types.ObjectId[];
 }
 
 export interface IChat extends Document {
+  type: string;
   participants: Types.ObjectId[];
-  listingId: Types.ObjectId;
-  offerId: Types.ObjectId;
+  taskId?: Types.ObjectId;
+  offerId?: Types.ObjectId;
   messages: IMessage[];
-  lastUpdated: Date;
+  title?: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: Date;
+  senderId?: Types.ObjectId;  // For request type chats
+  receiverId?: Types.ObjectId;  // For request type chats
 }
 
 const messageSchema = new Schema<IMessage>(
   {
     senderId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    text: { type: String, required: true },
-    timestamp: { type: Date, default: () => new Date() }
-  },
-  { _id: false }
-);
-
-const chatSchema = new Schema<IChat>(
-  {
-    participants: [
-      { type: Schema.Types.ObjectId, ref: 'User', required: true }
-    ],
-    listingId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Listing',
-      required: true
-    },
-    offerId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Offer',
-      required: true
-    },
-    messages: [messageSchema],
-    lastUpdated: { type: Date, default: () => new Date() }
+    text: { type: String, required: false },
+    type: { type: String, enum: ['text', 'image', 'file'], default: 'text' },
+    readBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    isEdited: { type: Boolean, default: false },
+    media: [{ type: Schema.Types.ObjectId, ref: 'Asset' }],
   },
   { timestamps: true }
 );
 
-export default model<IChat>('Chat', chatSchema);
+const chatSchema = new Schema<IChat>(
+  {
+    type: {
+      type: String,
+      enum: ['group', 'private', 'request'],
+      default: 'private',
+    },
+    participants: [
+      { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    ],
+    taskId: { type: Schema.Types.ObjectId, ref: 'Task' },
+    offerId: { type: Schema.Types.ObjectId, ref: 'Offer' },
+    messages: [messageSchema],
+    title: { type: String },
+    status: {
+      type: String,
+      enum: ['pending', 'accepted', 'rejected'],
+      default: 'pending',
+    },
+    senderId: { type: Schema.Types.ObjectId, ref: 'User' },  // For request type chats
+    receiverId: { type: Schema.Types.ObjectId, ref: 'User' }, // For request type chats
+  },
+  { timestamps: true }
+);
+
+const Message = (mongoose.models.Chat as any) || model<IChat>('Chat', chatSchema);
+
+export default Message;

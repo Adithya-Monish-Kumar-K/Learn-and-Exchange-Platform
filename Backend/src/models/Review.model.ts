@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import { IReview } from '../types/review';
+import { IReview } from '../types/Review';
 
 export interface IReviewDocument extends IReview, Document {}
 export interface IReviewModel extends Model<IReviewDocument> {}

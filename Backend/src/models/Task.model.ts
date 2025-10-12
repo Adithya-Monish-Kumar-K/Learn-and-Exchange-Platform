@@ -4,7 +4,7 @@ export interface ITask {
   title: string;
   description: string;
   postedBy: mongoose.Types.ObjectId;
-  offer: string;
+  offer: string[];
   requirements: string[];
   status?: 'open' | 'in_progress' | 'completed' | 'cancelled';
   applicants?: mongoose.Types.ObjectId[];
@@ -36,7 +36,7 @@ const TaskSchema: Schema<ITaskDocument> = new Schema(
       required: true,
     },
     offer: {
-      type: String,
+      type: [String],
       required: [true, 'Offer is required'],
       maxlength: [500, 'Offer cannot exceed 500 characters'],
     },
@@ -60,6 +60,6 @@ const TaskSchema: Schema<ITaskDocument> = new Schema(
   { timestamps: true }
 );
 
-const Task: ITaskModel = mongoose.model<ITaskDocument, ITaskModel>('Task', TaskSchema);
+const Task: ITaskModel = mongoose.models.Task || mongoose.model<ITaskDocument, ITaskModel>('Task', TaskSchema);
 
 export default Task;

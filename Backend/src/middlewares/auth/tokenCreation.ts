@@ -70,7 +70,6 @@ export function createRefreshToken(
   return jwt.sign(payload, refresh_secret_key, {
     expiresIn: expiresInValue as jwt.SignOptions['expiresIn'],
   });
-
 }
 
 export async function registermailtoken(data: TokenData): Promise<string> {
@@ -96,7 +95,9 @@ export async function registermailtoken(data: TokenData): Promise<string> {
   data.tokenId = String(savedToken._id);
 
   const private_key = getPrivateKey();
-  const token = await pasetoSign(data, private_key, { expiresIn: mailexpiresIn });
+  const token = await pasetoSign(data, private_key, {
+    expiresIn: mailexpiresIn,
+  });
 
   savedToken.token = token;
   await savedToken.save();
@@ -107,36 +108,33 @@ export async function registermailtoken(data: TokenData): Promise<string> {
 }
 
 export async function forgotmailtoken(data: TokenData): Promise<string> {
-    if (!forgot_secret_key) {
-        throw new Error('FORGOT_SECRET_KEY is not defined in the environment variables.');
-    }
-    console.log("forgotmailtoken")
+  if (!forgot_secret_key) {
+    throw new Error(
+      'FORGOT_SECRET_KEY is not defined in the environment variables.'
+    );
+  }
+  console.log('forgotmailtoken');
 
-    data.secret_key = forgot_secret_key;
+  data.secret_key = forgot_secret_key;
 
-    console.log("forgotmailtoken data",data)
-    const newToken = new Token({
-        token: "123", 
-        email: data.email,
-    });
+  console.log('forgotmailtoken data', data);
+  const newToken = new Token({
+    token: '123',
+    email: data.email,
+  });
 
-    
-    const savedToken = await newToken.save();
+  const savedToken = await newToken.save();
 
+  console.log('Token ID:', savedToken._id);
 
-    console.log('Token ID:', savedToken._id);
+  data.tokenId = String(savedToken._id);
+  const private_key = getPrivateKey();
+  let token = await pasetoSign(data, private_key, { expiresIn: mailexpiresIn });
 
-    data.tokenId = String(savedToken._id);
-        const private_key = getPrivateKey(); 
-    let token = await pasetoSign(data, private_key, { expiresIn: mailexpiresIn });
+  savedToken.token = token;
+  await savedToken.save();
 
+  console.log('Updated Token:', savedToken);
 
-    savedToken.token = token; 
-    await savedToken.save();
-
-
-    console.log('Updated Token:', savedToken);
-
-    return token;
+  return token;
 }
-

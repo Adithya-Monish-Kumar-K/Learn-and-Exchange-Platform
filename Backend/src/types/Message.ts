@@ -11,4 +11,6 @@ export interface IChat {
   offerId: string;       
   messages: IMessage[];
   lastUpdated: Date;
+  title: string;
+  status: 'pending' | 'accepted' | 'rejected';
 }
