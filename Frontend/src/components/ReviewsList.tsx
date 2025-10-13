@@ -21,7 +21,9 @@ const ReviewsList: React.FC = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await axios.get('http://localhost:3000/api/reviews');
+        const res = await axios.get(
+          'https://skill-exchange-platform-9s6c.onrender.com/api/reviews'
+        );
         // Ensure res.data is an array, otherwise use empty array
         const reviewsData = Array.isArray(res.data) ? res.data : [];
         setReviews(reviewsData);

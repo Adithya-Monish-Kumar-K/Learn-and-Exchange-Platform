@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api/tasks';
+const API_URL = 'https://skill-exchange-platform-9s6c.onrender.com/api/tasks';
 
 interface TaskData {
   title: string;

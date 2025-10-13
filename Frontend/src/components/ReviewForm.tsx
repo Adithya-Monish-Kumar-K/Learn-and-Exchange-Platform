@@ -28,7 +28,10 @@ const ReviewForm: React.FC = () => {
         comment,
         isAnonymous: false,
       };
-      await axios.post('http://localhost:3000/api/reviews', payload);
+      await axios.post(
+        'https://skill-exchange-platform-9s6c.onrender.com/api/reviews',
+        payload
+      );
       setSuccess(true);
       setComment('');
       setTitle('');

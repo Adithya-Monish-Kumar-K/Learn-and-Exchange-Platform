@@ -45,7 +45,9 @@ class APIClient {
     this.accessToken = localStorage.getItem('accessToken');
     this.user = this.getStoredUser();
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+      baseURL:
+        import.meta.env.VITE_API_URL ||
+        'https://skill-exchange-platform-9s6c.onrender.com/api',
       withCredentials: true,
       timeout: 15000,
     });
