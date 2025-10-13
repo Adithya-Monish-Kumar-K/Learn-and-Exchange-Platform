@@ -17,12 +17,47 @@ const forgot_secret_key = process.env.FORGOT_SECRET_KEY;
 
 const public_key_path = path.resolve(__dirname, '../rsa/public_key.pem');
 
+function getEnvKey(possibleNames: string[]): Buffer | undefined {
+  for (const name of possibleNames) {
+    const direct = process.env[name];
+    const b64 = process.env[`${name}_BASE64`];
+    if (b64 && b64.trim()) {
+      try {
+        return Buffer.from(b64, 'base64');
+      } catch {}
+    }
+    if (direct && direct.trim()) {
+      try {
+        return Buffer.from(direct, 'base64');
+      } catch {
+        return Buffer.from(normalizePem(direct), 'utf8');
+      }
+    }
+  }
+  return undefined;
+}
+
+function normalizePem(str: string): string {
+  return str.replace(/\\n/g, '\n');
+}
+
 function getPublicKey(): Buffer | string {
+  const envVal = getEnvKey([
+    'PASETO_PUBLIC_KEY',
+    'RSA_PUBLIC_KEY',
+    'PUBLIC_KEY',
+  ]);
+  if (envVal) {
+    console.info('[Auth] Using public key from environment');
+    return envVal;
+  }
   try {
-    return fs.readFileSync(public_key_path);
+    const buf = fs.readFileSync(public_key_path);
+    console.info(`[Auth] Using public key file: ${public_key_path}`);
+    return buf;
   } catch (err) {
     console.warn(
-      `⚠️ Public key not found or unreadable at ${public_key_path}. Using fallback value "123".`
+      `⚠️ Public key not found at ${public_key_path} and no env key provided. Using insecure fallback "123".`
     );
     return '123';
   }

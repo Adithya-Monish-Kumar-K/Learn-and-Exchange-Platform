@@ -55,7 +55,7 @@ const Chat: React.FC<ChatProps> = ({ currentUser }) => {
 
   useEffect(() => {
     // Initialize socket connection with user ID
-    const newSocket = io('http://localhost:3000', {
+    const newSocket = io('https://skill-exchange-platform-9s6c.onrender.com', {
       query: { userId: currentUser.id },
       transports: ['websocket', 'polling'],
     } as any);

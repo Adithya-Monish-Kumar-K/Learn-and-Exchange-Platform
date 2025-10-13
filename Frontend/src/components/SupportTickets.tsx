@@ -21,7 +21,9 @@ const SupportTickets: React.FC = () => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const res = await axios.get('http://localhost:3000/api/tickets');
+        const res = await axios.get(
+          'https://skill-exchange-platform-9s6c.onrender.com/api/tickets'
+        );
         // Ensure res.data is an array, otherwise use empty array
         const ticketsData = Array.isArray(res.data) ? res.data : [];
         setTickets(ticketsData);

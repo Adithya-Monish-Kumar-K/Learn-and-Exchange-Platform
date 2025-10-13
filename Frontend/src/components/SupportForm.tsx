@@ -22,7 +22,10 @@ const SupportForm: React.FC = () => {
         request: description.trim(),
         requestBy: currentUserId || 'anonymous',
       };
-      await axios.post('http://localhost:3000/api/tickets', payload);
+      await axios.post(
+        'https://skill-exchange-platform-9s6c.onrender.com/api/tickets',
+        payload
+      );
       setSuccess(true);
       setSubject('');
       setDescription('');
