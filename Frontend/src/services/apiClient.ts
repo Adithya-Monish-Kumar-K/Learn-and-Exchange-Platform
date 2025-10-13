@@ -278,6 +278,11 @@ class APIClient {
   setUser(user: StoredUser) {
     this.user = user;
     localStorage.setItem('user', JSON.stringify(user));
+    try {
+      window.dispatchEvent(
+        new CustomEvent('auth:change', { detail: { user } })
+      );
+    } catch {}
   }
 
   getUser() {
@@ -304,6 +309,9 @@ class APIClient {
       this.refreshTimer = null;
     }
     console.info('[AUTH] Logged out; tokens cleared');
+    try {
+      window.dispatchEvent(new CustomEvent('auth:change', { detail: null }));
+    } catch {}
   }
 
   private processRefreshQueue(error: any, newToken?: string) {
@@ -620,6 +628,14 @@ class APIClient {
   async getReviewDistribution() {
     return this.exec('Get Review Distribution', async () => {
       const { data } = await this.client.get('/charts/review-distribution');
+      return data;
+    });
+  }
+
+  // Chat activity trend
+  async getChatActivityTrend() {
+    return this.exec('Get Chat Activity Trend', async () => {
+      const { data } = await this.client.get('/charts/chat-activity-trend');
       return data;
     });
   }

@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { Types } from 'mongoose';
+import Message from '../models/Message.model';
 import User from '../models/User.model';
 import Task from '../models/Task.model';
 import Review from '../models/Review.model';
@@ -131,6 +133,65 @@ export const getUserRegistrationTrend = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching user registration trend:', error);
     res.status(500).json({ message: 'Error fetching user registration trend' });
+  }
+};
+
+// Chat activity: messages per day over last 14 days for current user
+export const getChatActivityTrend = async (req: any, res: Response) => {
+  try {
+    const userId = req.auth?.userid as string;
+    if (!userId || !Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid user context' });
+    }
+
+    const days = 14;
+    const from = new Date();
+    from.setDate(from.getDate() - (days - 1));
+
+    // Aggregate messages by day where user is a participant
+    const results = await Message.aggregate([
+      { $match: { participants: new Types.ObjectId(userId) } },
+      { $unwind: '$messages' },
+      { $match: { 'messages.createdAt': { $gte: from } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$messages.createdAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Build full date series and fill zeros
+    const labels: string[] = [];
+    const countsMap = new Map<string, number>();
+    results.forEach((r: any) => countsMap.set(r._id, r.count));
+
+    for (let i = 0; i < days; i++) {
+      const d = new Date(from);
+      d.setDate(from.getDate() + i);
+      const label = d.toISOString().slice(0, 10);
+      labels.push(label);
+    }
+
+    const data = labels.map((l) => countsMap.get(l) || 0);
+
+    return res.status(200).json({
+      labels,
+      datasets: [
+        {
+          label: 'Messages',
+          data,
+          tension: 0.3,
+          fill: true,
+        },
+      ],
+    });
+  } catch (error: any) {
+    console.error('Error fetching chat activity trend:', error);
+    res.status(500).json({ message: 'Error fetching chat activity trend' });
   }
 };
 

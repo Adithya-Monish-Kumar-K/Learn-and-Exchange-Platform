@@ -42,9 +42,9 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [taskStats, setTaskStats] = useState<any>(null);
   const [chartData, setChartData] = useState<{
-    taskTrend?: any;
     userTrend?: any;
     reviewDist?: any;
+    chatTrend?: any;
   }>({});
 
   const getChartColors = () => {
@@ -86,17 +86,17 @@ const Dashboard: React.FC = () => {
         // Fetch chart data separately
         try {
           const colors = getChartColors();
-          const [taskTrendData, userTrendData, reviewDistData] =
+          const [chatTrendData, userTrendData, reviewDistData] =
             await Promise.all([
-              apiClient.getTaskCompletionTrend(),
+              apiClient.getChatActivityTrend(),
               apiClient.getUserRegistrationTrend(),
               apiClient.getReviewDistribution(),
             ]);
 
           // Apply theme colors to the charts
-          const taskTrend = {
-            ...taskTrendData,
-            datasets: taskTrendData.datasets.map((dataset: any) => ({
+          const chatTrend = {
+            ...chatTrendData,
+            datasets: chatTrendData.datasets.map((dataset: any) => ({
               ...dataset,
               borderColor: colors.blue,
               backgroundColor: colors.blue + '40',
@@ -134,13 +134,13 @@ const Dashboard: React.FC = () => {
           };
 
           console.log('Chart data received:', {
-            taskTrend,
+            chatTrend,
             userTrend,
             reviewDist,
           });
 
           setChartData({
-            taskTrend: taskTrend || { labels: [], datasets: [] },
+            chatTrend: chatTrend || { labels: [], datasets: [] },
             userTrend: userTrend || { labels: [], datasets: [] },
             reviewDist: reviewDist || { labels: [], datasets: [] },
           });
@@ -148,7 +148,7 @@ const Dashboard: React.FC = () => {
           console.error('Error fetching chart data:', chartErr);
           // Don't fail completely if charts fail to load
           setChartData({
-            taskTrend: { labels: [], datasets: [] },
+            chatTrend: { labels: [], datasets: [] },
             userTrend: { labels: [], datasets: [] },
             reviewDist: { labels: [], datasets: [] },
           });
@@ -163,7 +163,7 @@ const Dashboard: React.FC = () => {
         );
         setStats([]);
         setChartData({
-          taskTrend: { labels: [], datasets: [] },
+          chatTrend: { labels: [], datasets: [] },
           userTrend: { labels: [], datasets: [] },
           reviewDist: { labels: [], datasets: [] },
         });
@@ -227,9 +227,9 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {taskStats && <TaskStatsChart stats={taskStats} />}
         <ChartCard
-          title="Task Completion Trend"
+          title="Chat Activity (Messages)"
           type="line"
-          data={chartData.taskTrend}
+          data={chartData.chatTrend}
           height={300}
         />
       </div>

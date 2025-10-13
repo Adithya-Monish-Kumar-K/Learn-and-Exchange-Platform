@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserProfileFormClass from './components/forms/UserProfileForm';
 import Chat, { type User } from './components/Chat';
@@ -26,6 +27,33 @@ import UpdateOfferForm from './components/offers/UpdateOfferForm';
 import Settings from './pages/Settings';
 
 function App() {
+  const ChatPage = () => {
+    const [user, setUser] = useState<User | null>(
+      (apiClient.getUser() as User) || null
+    );
+
+    useEffect(() => {
+      const onAuth = () => setUser((apiClient.getUser() as User) || null);
+      window.addEventListener('auth:change', onAuth);
+      // Attempt a light session verify to populate user if needed
+      if (!user) {
+        apiClient
+          .verifyToken()
+          .then(() => setUser((apiClient.getUser() as User) || null))
+          .catch(() => {});
+      }
+      return () => window.removeEventListener('auth:change', onAuth);
+    }, [user]);
+
+    if (!user) {
+      return (
+        <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+          <div className="animate-spin h-10 w-10 rounded-full border-4 border-blue-500 border-t-transparent" />
+        </div>
+      );
+    }
+    return <Chat currentUser={user} />;
+  };
   return (
     <Router>
       <ThemeProvider>
@@ -60,11 +88,7 @@ function App() {
               path="/chat"
               element={
                 <div className="h-[calc(100vh-4rem)]">
-                  {apiClient.getUser() ? (
-                    <Chat currentUser={apiClient.getUser() as User} />
-                  ) : (
-                    <div>User not found. Please log in.</div>
-                  )}
+                  <ChatPage />
                 </div>
               }
             />
