@@ -104,18 +104,19 @@ export async function tokenValidator(
 
     // accept both userid and userId from token payload
     const userid = payload?.userid ?? payload?.userId;
-    
+
     // Don't mutate req.body (causes unrecognized_keys in downstream validation). Attach to request context instead.
-    interface AuthAugmentedRequest extends Request { auth?: any }
-    const areFieldsPresent = (
+    interface AuthAugmentedRequest extends Request {
+      auth?: any;
+    }
+    const areFieldsPresent =
       payload &&
       payload.secret_key === secret_key &&
       userid &&
       payload.email &&
       payload.name &&
       payload.role &&
-      typeof payload.isActive !== 'undefined'
-    );
+      typeof payload.isActive !== 'undefined';
 
     if (!areFieldsPresent) {
       console.log('Invalid token payload:', payload);
