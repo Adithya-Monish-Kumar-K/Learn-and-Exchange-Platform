@@ -9,7 +9,7 @@ import reviewSupportRoutes from './routes/reviewSupport.routes';
 import userRoutes from './routes/user.routes';
 import statRoutes from './routes/stats.routes';
 import chartRoutes from './routes/chart.routes';
-import taskRoutes from './routes/Task.routes';
+import taskRoutes from './routes/task.routes';
 import offerRoutes from './routes/offer.routes';
 import { app, server } from './config/socket';
 
