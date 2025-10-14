@@ -4,7 +4,6 @@ import {
   getUserRegistrationTrend,
   getReviewDistribution,
   getChatActivityTrend,
-  getOfferStatusDistribution,
 } from '../controllers/chart.controller';
 import { tokenValidator } from '../middlewares/auth/tokenValidation';
 
@@ -18,10 +17,5 @@ router.get(
 );
 router.get('/review-distribution', tokenValidator, getReviewDistribution);
 router.get('/chat-activity-trend', tokenValidator, getChatActivityTrend);
-router.get(
-  '/offer-status-distribution',
-  tokenValidator,
-  getOfferStatusDistribution
-);
 
 export default router;

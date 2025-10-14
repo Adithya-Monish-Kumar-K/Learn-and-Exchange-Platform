@@ -632,15 +632,6 @@ class APIClient {
     });
   }
 
-  async getOfferStatusDistribution() {
-    return this.exec('Get Offer Status Distribution', async () => {
-      const { data } = await this.client.get(
-        '/charts/offer-status-distribution'
-      );
-      return data;
-    });
-  }
-
   // Chat activity trend
   async getChatActivityTrend() {
     return this.exec('Get Chat Activity Trend', async () => {
