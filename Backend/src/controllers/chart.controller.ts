@@ -4,6 +4,7 @@ import Message from '../models/Message.model';
 import User from '../models/User.model';
 import Task from '../models/Task.model';
 import Review from '../models/Review.model';
+import Offer from '../models/Offer.model';
 
 // Get monthly task completion data for the last 6 months
 export const getTaskCompletionTrend = async (req: Request, res: Response) => {
@@ -244,5 +245,45 @@ export const getReviewDistribution = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching review distribution:', error);
     res.status(500).json({ message: 'Error fetching review distribution' });
+  }
+};
+
+// Offer status distribution (pending/accepted/declined/withdrawn)
+export const getOfferStatusDistribution = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const statuses = ['pending', 'accepted', 'declined', 'withdrawn'];
+
+    const agg = await Offer.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const countsMap = new Map<string, number>();
+    agg.forEach((s: any) => countsMap.set(s._id, s.count));
+
+    const labels = statuses.map((s) => s.charAt(0).toUpperCase() + s.slice(1));
+    const data = statuses.map((s) => countsMap.get(s) || 0);
+
+    return res.status(200).json({
+      labels,
+      datasets: [
+        {
+          label: 'Offers',
+          data,
+        },
+      ],
+    });
+  } catch (error) {
+    console.error('Error fetching offer status distribution:', error);
+    res
+      .status(500)
+      .json({ message: 'Error fetching offer status distribution' });
   }
 };

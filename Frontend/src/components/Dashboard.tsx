@@ -45,6 +45,7 @@ const Dashboard: React.FC = () => {
     userTrend?: any;
     reviewDist?: any;
     chatTrend?: any;
+    offerDist?: any;
   }>({});
 
   const getChartColors = () => {
@@ -86,11 +87,12 @@ const Dashboard: React.FC = () => {
         // Fetch chart data separately
         try {
           const colors = getChartColors();
-          const [chatTrendData, userTrendData, reviewDistData] =
+          const [chatTrendData, userTrendData, reviewDistData, offerDistData] =
             await Promise.all([
               apiClient.getChatActivityTrend(),
               apiClient.getUserRegistrationTrend(),
               apiClient.getReviewDistribution(),
+              apiClient.getOfferStatusDistribution(),
             ]);
 
           // Apply theme colors to the charts
@@ -133,16 +135,40 @@ const Dashboard: React.FC = () => {
             })),
           };
 
+          // Apply theme colors to the offer distribution
+          const offerDist = {
+            ...offerDistData,
+            datasets: offerDistData.datasets.map((dataset: any) => ({
+              ...dataset,
+              backgroundColor: [
+                colors.blue,
+                colors.green,
+                colors.orange,
+                colors.purple,
+                colors.red,
+              ].slice(0, dataset.data?.length ?? 5),
+              borderColor: [
+                colors.blue,
+                colors.green,
+                colors.orange,
+                colors.purple,
+                colors.red,
+              ].slice(0, dataset.data?.length ?? 5),
+            })),
+          };
+
           console.log('Chart data received:', {
             chatTrend,
             userTrend,
             reviewDist,
+            offerDist,
           });
 
           setChartData({
             chatTrend: chatTrend || { labels: [], datasets: [] },
             userTrend: userTrend || { labels: [], datasets: [] },
             reviewDist: reviewDist || { labels: [], datasets: [] },
+            offerDist: offerDist || { labels: [], datasets: [] },
           });
         } catch (chartErr: any) {
           console.error('Error fetching chart data:', chartErr);
@@ -151,6 +177,7 @@ const Dashboard: React.FC = () => {
             chatTrend: { labels: [], datasets: [] },
             userTrend: { labels: [], datasets: [] },
             reviewDist: { labels: [], datasets: [] },
+            offerDist: { labels: [], datasets: [] },
           });
         }
 
@@ -166,6 +193,7 @@ const Dashboard: React.FC = () => {
           chatTrend: { labels: [], datasets: [] },
           userTrend: { labels: [], datasets: [] },
           reviewDist: { labels: [], datasets: [] },
+          offerDist: { labels: [], datasets: [] },
         });
       } finally {
         setLoading(false);
@@ -245,6 +273,16 @@ const Dashboard: React.FC = () => {
           title="Review Rating Distribution"
           type="doughnut"
           data={chartData.reviewDist}
+          height={300}
+        />
+      </div>
+
+      {/* Offers Visualization */}
+      <div className="grid grid-cols-1 gap-6 mt-8">
+        <ChartCard
+          title="Offer Status Distribution"
+          type="doughnut"
+          data={chartData.offerDist}
           height={300}
         />
       </div>
