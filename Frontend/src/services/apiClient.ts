@@ -40,6 +40,7 @@ class APIClient {
     reject: (e: any) => void;
   }[] = [];
   private refreshTimer: number | null = null;
+  private isRedirecting = false;
 
   constructor() {
     this.accessToken = localStorage.getItem('accessToken');
@@ -80,28 +81,11 @@ class APIClient {
         return response;
       },
       async (error: AxiosError) => {
-        const original: any = error.config;
         const status = error.response?.status;
-
-        // Attempt silent refresh on 401 (once)
-        if (
-          status === 401 &&
-          !original._retry &&
-          !this.isUnprotectedPath(original?.url)
-        ) {
-          original._retry = true;
-          try {
-            const newToken = await this.refreshAccessToken();
-            original.headers = original.headers || {};
-            original.headers.Authorization = `Bearer ${newToken}`;
-            return this.client(original);
-          } catch (refreshErr) {
-            this.logout();
-          }
-        }
-
-        if (status === 401 && !this.isUnprotectedPath(error.config?.url)) {
+        // For ALL 401s: clear auth and redirect to login
+        if (status === 401) {
           this.logout();
+          this.redirectToLogin();
         }
         this.logError(error);
         return Promise.reject(this.normalizeError(error));
@@ -109,17 +93,7 @@ class APIClient {
     );
   }
 
-  private isUnprotectedPath(url?: string) {
-    if (!url) return false;
-    return [
-      '/auth/register',
-      '/auth/create-password',
-      '/auth/verify-token-register',
-      '/auth/forgot-password',
-      '/auth/verify-token-forgot',
-      '/auth/reset-password',
-    ].some((p) => url.includes(p));
-  }
+  // Removed isUnprotectedPath: all 401s trigger logout + redirect
 
   private logRequest(config: AxiosRequestConfig) {
     const method = (config.method || 'get').toUpperCase();
@@ -312,6 +286,22 @@ class APIClient {
     try {
       window.dispatchEvent(new CustomEvent('auth:change', { detail: null }));
     } catch {}
+  }
+
+  private redirectToLogin() {
+    try {
+      if (this.isRedirecting) return;
+      this.isRedirecting = true;
+      const target = '/login';
+      if (typeof window !== 'undefined') {
+        if (window.location.pathname !== target) {
+          // Use replace to prevent the user from navigating back to a protected page with the back button
+          window.location.replace(target);
+        }
+      }
+    } catch {
+      // no-op
+    }
   }
 
   private processRefreshQueue(error: any, newToken?: string) {

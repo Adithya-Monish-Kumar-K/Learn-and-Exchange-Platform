@@ -115,6 +115,7 @@ const UpdateUserProfileForm: React.FC<Props> = ({ onUpdated, initial }) => {
   const removeArrayItem = (key: 'links' | 'skills' | 'qualifications' | 'experience', index: number) => () => {
     setForm(f => {
       const arr = [...(f[key] || [])];
+      console.log(arr, index);
       arr.splice(index, 1);
       return { ...f, [key]: arr };
     });
