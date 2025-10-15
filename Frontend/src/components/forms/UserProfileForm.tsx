@@ -55,13 +55,6 @@ const toId = (v: unknown): string | undefined => {
   return undefined;
 };
 
-interface LinkPreview {
-  original: string;
-  contentType: string;
-  objectUrl?: string;
-  error?: string;
-  filename?: string;
-}
 export interface UserProfileFormData {
   name: string;
   email: string;
@@ -130,7 +123,6 @@ class UserProfileFormClass extends React.Component<
     d: UserProfileFormData;
     loading: boolean;
     error?: string;
-    linkPreviews: LinkPreview[];
     editing: boolean;
   }
 > {
@@ -138,15 +130,10 @@ class UserProfileFormClass extends React.Component<
     d: empty,
     loading: true,
     error: undefined as string | undefined,
-    linkPreviews: [],
     editing: false,
   };
-  private revoked: string[] = [];
   componentDidMount() {
     this.load();
-  }
-  componentWillUnmount() {
-    this.revoked.forEach((u) => URL.revokeObjectURL(u));
   }
   async load() {
     try {
@@ -265,7 +252,7 @@ class UserProfileFormClass extends React.Component<
           .filter((t): t is string => !!t),
         profileImage: toId(fullRaw.profileImage) || undefined,
       };
-      this.setState({ d }, () => this.fetchLinkPreviews());
+      this.setState({ d });
     } catch (e: unknown) {
       const message =
         e && typeof e === 'object' && 'message' in e
@@ -276,54 +263,11 @@ class UserProfileFormClass extends React.Component<
       this.setState({ loading: false });
     }
   }
-  async fetchLinkPreviews() {
-    const { d } = this.state;
-    const previews: LinkPreview[] = await Promise.all(
-      d.links.map(async (link) => {
-        try {
-          const resp = await fetch(link, { method: 'GET' });
-          const contentType =
-            resp.headers.get('Content-Type') || 'application/octet-stream';
-          if (!resp.ok)
-            return {
-              original: link,
-              contentType,
-              error: resp.status + ' ' + resp.statusText,
-            };
-          // Only create object URLs for images/pdf
-          if (/image\//i.test(contentType) || /pdf/i.test(contentType)) {
-            const blob = await resp.blob();
-            const objectUrl = URL.createObjectURL(blob);
-            this.revoked.push(objectUrl);
-            // try derive filename
-            const disposition = resp.headers.get('Content-Disposition') || '';
-            const match = disposition.match(/filename="?([^";]+)"?/i);
-            return {
-              original: link,
-              contentType,
-              objectUrl,
-              filename: match ? match[1] : undefined,
-            };
-          }
-          return { original: link, contentType };
-        } catch (err: unknown) {
-          const msg =
-            err && typeof err === 'object' && 'message' in err
-              ? String((err as { message?: unknown }).message)
-              : 'fetch failed';
-          return { original: link, contentType: 'unknown', error: msg };
-        }
-      })
-    );
-    this.setState({ linkPreviews: previews });
-  }
   handleUpdated = (updated: UserProfileFormData) => {
-    this.setState({ d: updated, editing: false }, () =>
-      this.fetchLinkPreviews()
-    );
+    this.setState({ d: updated, editing: false });
   };
   render() {
-    const { d, loading, error, linkPreviews, editing } = this.state;
+    const { d, loading, error, editing } = this.state;
     const downloadJson = (data: unknown, filename: string) => {
       const blob = new Blob([JSON.stringify(data, null, 2)], {
         type: 'application/json',
@@ -724,148 +668,27 @@ class UserProfileFormClass extends React.Component<
               ) : (
                 <div
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))',
-                    gap: 12,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
                   }}
                 >
-                  {linkPreviews.map((p: LinkPreview, i) => {
-                    if (p.error)
-                      return (
-                        <div
-                          key={i}
-                          style={{
-                            border: '1px solid #fecaca',
-                            background: '#fef2f2',
-                            padding: 8,
-                            borderRadius: 8,
-                          }}
-                        >
-                          <div style={{ fontSize: 11, color: '#b91c1c' }}>
-                            {p.original}
-                          </div>
-                          <div style={{ fontSize: 11, color: '#dc2626' }}>
-                            {p.error}
-                          </div>
-                        </div>
-                      );
-                    if (p.objectUrl && /image\//i.test(p.contentType))
-                      return (
-                        <div
-                          key={i}
-                          style={{
-                            border: '1px solid var(--card-border)',
-                            borderRadius: 8,
-                            overflow: 'hidden',
-                            background: 'var(--card-background)',
-                          }}
-                        >
-                          <a
-                            href={p.original}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              textDecoration: 'none',
-                              color: 'var(--text-primary)',
-                            }}
-                          >
-                            <img
-                              src={p.objectUrl}
-                              alt={p.filename || 'link image'}
-                              style={{
-                                width: '100%',
-                                height: 120,
-                                objectFit: 'cover',
-                                display: 'block',
-                              }}
-                            />
-                            <div
-                              style={{
-                                padding: '6px 8px',
-                                fontSize: 11,
-                                whiteSpace: 'nowrap',
-                                textOverflow: 'ellipsis',
-                                overflow: 'hidden',
-                              }}
-                            >
-                              {p.filename || p.original}
-                            </div>
-                          </a>
-                        </div>
-                      );
-                    if (p.objectUrl && /pdf/i.test(p.contentType))
-                      return (
-                        <div
-                          key={i}
-                          style={{
-                            border: '1px solid var(--card-border)',
-                            borderRadius: 8,
-                            background: 'var(--card-background)',
-                            padding: 8,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 6,
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              color: 'var(--text-primary)',
-                            }}
-                          >
-                            PDF
-                          </span>
-                          <a
-                            href={p.objectUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              fontSize: 11,
-                              color: '#2563eb',
-                              wordBreak: 'break-all',
-                            }}
-                          >
-                            {p.filename || 'Open Document'}
-                          </a>
-                          <a
-                            href={p.original}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ fontSize: 10, color: 'var(--text-muted)' }}
-                          >
-                            Source
-                          </a>
-                        </div>
-                      );
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          border: '1px solid var(--card-border)',
-                          borderRadius: 8,
-                          background: 'var(--card-background)',
-                          padding: 8,
-                          fontSize: 11,
-                          wordBreak: 'break-all',
-                        }}
-                      >
-                        <a
-                          href={p.original}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ color: '#2563eb', textDecoration: 'none' }}
-                        >
-                          {p.original}
-                        </a>
-                        <div
-                          style={{ color: 'var(--text-muted)', marginTop: 4 }}
-                        >
-                          {p.contentType}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {d.links.map((link, i) => (
+                    <a
+                      key={i}
+                      href={link}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        color: '#2563eb',
+                        textDecoration: 'none',
+                        fontSize: 13,
+                        wordBreak: 'break-all',
+                      }}
+                    >
+                      {link}
+                    </a>
+                  ))}
                 </div>
               )}
             </Section>
